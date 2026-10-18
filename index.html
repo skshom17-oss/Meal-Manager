@@ -80,6 +80,7 @@ tfoot td:first-child{background:var(--inp)}
 #bar{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);padding:8px 10px;display:flex;align-items:center;gap:8px;z-index:6}#bar[hidden]{display:none}
 .x3{font:inherit;font-size:20px;font-weight:700;border:1px solid var(--line);background:var(--inp);color:var(--ink);border-radius:8px;width:44px;min-height:44px;cursor:pointer}button:disabled{opacity:.4;cursor:default}.cnt{flex:1;font-size:13px;color:var(--mut);line-height:1.2}
 .credit{text-align:center;color:var(--mut);font-size:13px;padding:0 0 12px}
+.logbox{max-height:300px;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid var(--line);padding-right:4px}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
 nav button{font:inherit;font-size:14px;font-weight:500;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:8px;cursor:pointer;min-height:44px}
 nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
@@ -89,7 +90,7 @@ nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
 </head>
 <body>
 <header><h1>মিল ক্যালকুলেটর</h1><div class="hs"><button id="mb"></button><span class="chip" id="rc" hidden></span><button class='chip' id='eb' hidden onclick='toggleEdit()'></button></div></header>
-<main id="v"></main><div class='credit'>App created by Shom Chandra Das</div>
+<main id="v"></main><div class='credit'>App created by Shom Chandra Das<br><a href='mailto:skshom17@gmail.com' style='color:inherit'>skshom17@gmail.com</a></div>
 <nav id="nv">
 <button data-t="summary">সামারি</button>
 <button data-t="bazar">বাজার</button>
@@ -372,7 +373,14 @@ const lockB=()=>locked()?`<div class='banner' style='background:var(--badbg);col
 function logE(p,t){return db.collection(p+'/log').add({ts:Date.now(),by:myId||'',text:t})}
 async function resolveNamesOld(){if(!uapi)return;const ids=[...new Set(logs.map(l=>l.by).filter(i=>i&&!(i in pnames)))];if(!ids.length)return;ids.forEach(i=>pnames[i]='');try{const ps=await uapi.profiles(ids);ids.forEach(i=>{pnames[i]=(ps[i]&&ps[i].name)||''});render()}catch(e){}}
 function sync(){if(!db||!mLoaded)return;const m=month;db.doc('months/'+m).get().then(s=>{if(!pend&&m===month){mdoc=s.exists?s.data():{};mExists=s.exists;render()}}).catch(()=>{})}
-function logHTML(){return logs.length?logs.map(l=>`<div class='it'><div>${esc(l.text)}<br><small>${esc(pnames[l.by]||'কেউ একজন')} · ${new Date(l.ts).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</small></div></div>`).join(''):`<div class='empty'>এখনো কোনো পরিবর্তন নেই।</div>`}
+let logAll=false;
+function logHTML(){
+  if(!logs.length)return `<div class='empty'>এখনো কোনো পরিবর্তন নেই।</div>`;
+  const rows=logAll?logs:logs.slice(0,10);
+  let h=rows.map(l=>`<div class='it'><div>${esc(l.text)}<br><small>${esc(pnames[l.by]||'কেউ একজন')} · ${new Date(l.ts).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</small></div></div>`).join('');
+  if(logs.length>10)h+=`<button class='btn alt' style='margin-top:8px' onclick='logAll=!logAll;render()'>${logAll?'কম দেখুন':'আরও দেখুন ('+(logs.length-10)+')'}</button>`;
+  return h;
+}
 function extraHTML(){
   let h='';
   if(canW)h+=`<div class='card'><h2>বাড়তি খরচ (সবাই সমান ভাগ)</h2><div class='fr'><input id='xd' type='number' min='1' max='31' inputmode='numeric' placeholder='তারিখ' value='${defDay()}'><input id='xa' type='number' min='0' inputmode='decimal' placeholder='টাকা'></div><input id='xn' type='text' placeholder='কীসের খরচ (গ্যাস, ওয়াইফাই, বুয়া…)'><button class='btn' onclick='addX()'>খরচ যোগ করুন</button></div>`;
@@ -434,10 +442,10 @@ function setHTML(){
     act.forEach(m=>{h+=`<div class="mrow"><input type="text" value="${esc(m.name)}" onchange="renM('${m.id}',this.value)"><button class="btn danger" onclick="arm('d${m.id}',()=>rmM('${m.id}'))">${armed==='d'+m.id?'নিশ্চিত?':'সরান'}</button></div>`});
     h+=`<div class="mrow"><input id="nm" type="text" placeholder="নতুন সদস্যের নাম"><button class="btn" onclick="addM()">যোগ</button></div>`;
     h+=`<div class="note">সরানো সদস্যের আগের মাসের হিসাব ঠিক থাকে। নতুন বাজার বা জমায় তাকে আর দেখাবে না।</div></div>`;
-    if(gone.length)h+=`<div class="card"><h2>সরানো সদস্য</h2>${gone.map(m=>`<div class="mrow"><div style="padding:10px 0">${esc(m.name)}</div><button class="btn alt" onclick="restM('${m.id}')">ফিরিয়ে আনুন</button></div>`).join('')}</div>`;
+    if(gone.length)h+=`<div class="card"><h2>সরানো সদস্য</h2>${gone.map(m=>`<div class="mrow"><div style="padding:10px 0">${esc(m.name)}</div><div style="display:flex;gap:6px"><button class="btn alt" onclick="restM('${m.id}')">ফিরিয়ে আনুন</button><button class="btn danger" onclick="arm('x${m.id}',()=>purgeM('${m.id}'))">${armed==='x'+m.id?'নিশ্চিত?':'মুছুন'}</button></div></div>`).join('')}</div>`;
     h+=`<div class="card"><h2>এই মাসের হিসাব</h2><button class='btn alt' style='margin-bottom:8px' onclick='toggleLock()'>${locked()?'🔓 মাস খুলুন':'🔒 মাস বন্ধ করুন'}</button><button class="btn danger" onclick="arm('rst',resetMonth)">${armed==='rst'?'আবার ট্যাপ করে নিশ্চিত করুন':mlabel(month)+'-এর সব তথ্য মুছুন'}</button></div>`;
   }
-  h+=`<div class="card"><h2>সাম্প্রতিক পরিবর্তন</h2>${logHTML()}</div><div class='card'><h2>অ্যাক্সেস ও অ্যাকাউন্ট</h2>${accessHTML()}</div>`;
+  h+=`<div class="card"><h2>সাম্প্রতিক পরিবর্তন</h2><div class="${logAll?'logbox':''}">${logHTML()}</div></div><div class='card'><h2>অ্যাক্সেস ও অ্যাকাউন্ট</h2>${accessHTML()}</div>`;
   return h;
 }
 function go(t){tab=t;armed=null;render();window.scrollTo(0,0)}
@@ -583,6 +591,24 @@ function resetMonth(){
   const l=[];['bazar','jama','extra'].forEach(c=>E()[c].forEach(x=>l.push({t:'del',c,id:x.id})));
   Object.keys(meals()).forEach(k=>l.push({t:'meal',k,v:0}));
   stage({t:'batch',ops:l,lg:'মাসের সব তথ্য মুছে ফেলা হয়েছে'});
+}
+async function purgeM(id){
+  let used=false;
+  try{
+    for(const ym of months){
+      const d=await db.doc('months/'+ym).get();
+      const ml=(d.exists&&d.data().meals)||{};
+      if(Object.keys(ml).some(k=>k.endsWith('_'+id)&&ml[k])){used=true;break}
+      for(const c of ['jama','bazar']){
+        const r=await db.collection('months/'+ym+'/'+c).where('who','==',id).limit(1).get();
+        if(!r.empty){used=true;break}
+      }
+      if(used)break;
+    }
+  }catch(e){toast('যাচাই করা যায়নি');return}
+  if(used){toast('পুরনো হিসাব আছে, মুছা যাবে না');return}
+  saveMembers(MEM().filter(m=>m.id!==id),'',who(id)+' সদস্য স্থায়ীভাবে মুছে ফেলা হয়েছে');
+  toast('সেভ চাপলে মুছে যাবে');
 }
 window.addEventListener('beforeunload',e=>{if(ops.length){e.preventDefault();e.returnValue=''}});
 init();
