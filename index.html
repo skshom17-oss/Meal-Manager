@@ -125,7 +125,7 @@ function mems(entry){return MEM().filter(m=>m.active!==false||(!entry&&hasData(m
 function onErr(e){if(e&&e.code==='revoked'){status='nodb';render()}}
 
 /* ---------- accounts, access code, roles (Firebase) ---------- */
-const FIREBASE_CONFIG=null; /* optional: paste config here instead of using the setup screen */
+const FIREBASE_CONFIG={apiKey:"AIzaSyBTicx4JNMnbSM8O3Qw5BF0Wemm0s0j3Yg",authDomain:"meal-51bc8.firebaseapp.com",projectId:"meal-51bc8",storageBucket:"meal-51bc8.firebasestorage.app",messagingSenderId:"690690680963",appId:"1:690690680963:web:3958a60e9a646738f4d3b6"}; /* optional: paste config here instead of using the setup screen */
 let auth=null,fs=null,me=null,mid=null,role=null,appUsers=[],messTitle='',authMode='in',unsubs=[],started=false,errMsg='';
 const roleBn=r=>({admin:'অ্যাডমিন',editor:'এডিটর',viewer:'ভিউয়ার'})[r]||r;
 const b64e=t=>btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
