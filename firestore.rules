@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function memberPath(m) { return /databases/$(database)/documents/messes/$(m)/members/$(request.auth.uid); }
+    function isMember(m) { return signedIn() && exists(memberPath(m)); }
+    function myRole(m) { return get(memberPath(m)).data.role; }
+    function isAdmin(m) { return isMember(m) && myRole(m) == 'admin'; }
+    function canWrite(m) { return isMember(m) && (myRole(m) == 'admin' || myRole(m) == 'editor'); }
+
+    match /users/{u} {
+      allow read, write: if signedIn() && request.auth.uid == u;
+    }
+
+    match /messes/{m} {
+      allow read: if isMember(m);
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdmin(m);
+
+      match /members/{u} {
+        allow read: if isMember(m) || (signedIn() && request.auth.uid == u);
+        allow create: if signedIn() && request.auth.uid == u && (
+          (request.resource.data.role == 'viewer' && exists(/databases/$(database)/documents/messes/$(m))) ||
+          (request.resource.data.role == 'admin' && get(/databases/$(database)/documents/messes/$(m)).data.createdBy == request.auth.uid)
+        );
+        allow update: if isAdmin(m);
+        allow delete: if isAdmin(m) || (signedIn() && request.auth.uid == u);
+      }
+
+      match /config/{d} {
+        allow read: if isMember(m);
+        allow write: if isAdmin(m);
+      }
+
+      match /months/{ym} {
+        allow read: if isMember(m);
+        allow write: if canWrite(m);
+        match /{col}/{id} {
+          allow read: if isMember(m);
+          allow write: if canWrite(m);
+        }
+      }
+    }
+  }
+}
