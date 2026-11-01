@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>মিল ক্যালকুলেটর</title>
+<meta name="theme-color" content="#1b2a4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="মিল">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--ink:#1b2438;--mut:#667086;--line:#e0e5ee;--acc:#e3a21a;--accink:#2b1d00;--navy:#1b2a4a;--navyink:#fff;--good:#1e7a47;--goodbg:#e4f3ea;--bad:#c4332a;--badbg:#fbe9e7;--inp:#f7f8fb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141d;--card:#1a2030;--ink:#e8ebf2;--mut:#98a1b5;--line:#2a3247;--acc:#f0b429;--accink:#2b1d00;--navy:#242e48;--navyink:#fff;--good:#5fd08e;--goodbg:#173626;--bad:#ff8c80;--badbg:#3b1d1a;--inp:#141a28;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10141d;--card:#1a2030;--ink:#e8ebf2;--mut:#98a1b5;--line:#2a3247;--acc:#f0b429;--accink:#2b1d00;--navy:#242e48;--navyink:#fff;--good:#5fd08e;--goodbg:#173626;--bad:#ff8c80;--badbg:#3b1d1a;--inp:#141a28;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hind Siliguri','Noto Sans Bengali','Kalpurush',system-ui,sans-serif;font-size:16px;line-height:1.45;padding-bottom:84px}
+header{background:var(--navy);color:var(--navyink);padding:16px 16px 14px;border-bottom:4px solid var(--acc)}
+header h1{margin:0;font-size:20px;font-weight:700}
+.hs{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:2px}
+.hs button{font:inherit;color:var(--navyink);background:none;border:0;padding:0;text-decoration:underline;opacity:.85;cursor:pointer}
+.chip{font-size:12.5px;font-weight:600;padding:1px 9px;border-radius:99px;background:var(--acc);color:var(--accink)}
+main{max-width:560px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card.owe{border-color:var(--bad);border-width:2px}
+.card.ok{border-color:var(--good)}
+h2{font-size:16px;margin:0 0 10px;font-weight:600}
+.rate{background:var(--navy);color:var(--navyink);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.rate small{display:block;font-size:13px;opacity:.75}
+.rate .big{font-size:40px;font-weight:700;line-height:1;color:var(--acc)}
+.rate .sub{text-align:right;font-size:14px}
+.rate .sub b{font-size:18px;display:block}
+.rw{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.nm{font-size:18px}
+.bd{font-size:14px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--inp);color:var(--mut)}
+.bd.get,.bd.ok{background:var(--goodbg);color:var(--good)}
+.bd.owe{background:var(--bad);color:#fff}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-weight:600}
+.g3 span{display:block;font-size:12.5px;font-weight:400;color:var(--mut)}
+.line{display:flex;justify-content:space-between;padding-top:10px;margin-top:10px;border-top:1px solid var(--line)}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--inp);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;min-height:44px}
+input:disabled{opacity:.6}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{width:100%;font:inherit;font-weight:600;background:var(--acc);color:var(--accink);border:0;border-radius:8px;padding:11px;min-height:44px;cursor:pointer}
+.btn.alt{background:var(--inp);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--badbg);color:var(--bad)}
+.it{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.it:first-of-type{border-top:0}
+.it small{color:var(--mut)}
+.am{display:flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap}
+.x{font:inherit;font-size:20px;line-height:1;width:32px;height:32px;border:0;border-radius:8px;background:var(--badbg);color:var(--bad);cursor:pointer}
+.empty,.note{color:var(--mut);text-align:center;padding:10px 0 4px}
+.note{text-align:left;font-size:14px;padding:0}
+.banner{background:var(--goodbg);color:var(--good);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+.banner button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 10px;background:var(--good);color:#fff;cursor:pointer}
+.sc{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:12px}
+table{border-collapse:collapse;width:100%}
+th,td{padding:4px;text-align:center;border-bottom:1px solid var(--line);font-size:14px}
+th{background:var(--navy);color:var(--navyink);font-weight:600;padding:8px 6px}
+td:first-child,th:first-child{position:sticky;left:0;background:var(--card);font-weight:600;min-width:42px;z-index:1}
+th:first-child{background:var(--navy)}
+td input{width:58px;margin:0;padding:6px 2px;text-align:center;min-height:38px}
+tfoot td{font-weight:700;background:var(--inp)}
+tfoot td:first-child{background:var(--inp)}
+.dt{color:var(--mut);min-width:40px}
+.mrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.mrow .btn{width:auto;padding:0 14px}
+.lk{font:inherit;font-size:14px;background:none;border:0;color:var(--mut);text-decoration:underline;padding:0 0 8px;cursor:pointer}
+.stp{display:flex;gap:14px}.sp small{display:block;color:var(--mut);font-size:12px;text-align:center}.sp div{display:flex;align-items:center;gap:6px}.sp b{min-width:24px;text-align:center}.x2{font:inherit;font-size:20px;font-weight:700;width:36px;height:36px;border:0;border-radius:8px;background:var(--acc);color:var(--accink);cursor:pointer}
+.hs button.chip{text-decoration:none;opacity:1;background:var(--acc);color:var(--accink);border:0;font-weight:600;font-size:12.5px;padding:1px 10px;cursor:pointer}
+#bar{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);padding:8px 10px;display:flex;align-items:center;gap:8px;z-index:6}#bar[hidden]{display:none}
+.x3{font:inherit;font-size:20px;font-weight:700;border:1px solid var(--line);background:var(--inp);color:var(--ink);border-radius:8px;width:44px;min-height:44px;cursor:pointer}button:disabled{opacity:.4;cursor:default}.cnt{flex:1;font-size:13px;color:var(--mut);line-height:1.2}
+.credit{text-align:center;color:var(--mut);font-size:13px;padding:0 0 12px}
+.logbox{max-height:300px;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid var(--line);padding-right:4px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{font:inherit;font-size:14px;font-weight:500;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:8px;cursor:pointer;min-height:44px}
+nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
+#toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--navyink);padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;white-space:nowrap}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header><h1>মিল ক্যালকুলেটর</h1><div class="hs"><button id="mb"></button><span class="chip" id="rc" hidden></span><button class='chip' id='eb' hidden onclick='toggleEdit()'></button></div></header>
+<main id="v"></main><div class='credit'>App created by Shom Chandra Das<br><a href='mailto:skshom17@gmail.com' style='color:inherit'>skshom17@gmail.com</a></div>
+<nav id="nv">
+<button data-t="summary">সামারি</button>
+<button data-t="bazar">বাজার</button>
+<button data-t="meal">মিল</button>
+<button data-t="jama">জমা</button>
+<button data-t="set">সেটিং</button>
+</nav>
+<div id='bar' hidden></div><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f=n=>(Math.round(n*100)/100).toLocaleString('en-US',{maximumFractionDigits:2});
+const C=window.claude;
+const cur=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();
+let db=null,isAdmin=false,cw=true,status='loading';
+Object.defineProperty(window,'canW',{get:()=>cw&&editing&&!locked(),set:v=>{cw=v}});
+let month=cur,tab='summary',armed=null;
+let cfg=null,mdoc={},mExists=false,mLoaded=false,bazar=[],jama=[],months=[],subs=[];
+let myId=null,pnames={},logs=[],extra=[],dl=null,uapi=null,qd=null,pend=0,sB=[],sJ=[],sX=[],ops=[],rd=[],editing=true,eff=null;
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2000)}
+function mlabel(ym){try{const[y,m]=ym.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('bn-BD',{month:'long',year:'numeric'})}catch(e){return ym}}
+function dim(){const[y,m]=month.split('-').map(Number);return new Date(y,m,0).getDate()}
+function defDay(){return month===cur?new Date().getDate():1}
+const MEM=()=>E().mem;
+const meals=()=>E().M;
+const locked=()=>E().lock;
+function who(id){const m=MEM().find(x=>x.id===id);return m?m.name:'—'}
+function hasData(id){const ml=meals();return jama.some(j=>j.who===id)||Object.keys(ml).some(k=>k.endsWith('_'+id)&&ml[k])}
+function mems(entry){return MEM().filter(m=>m.active!==false||(!entry&&hasData(m.id)))}
+
+/* ---------- online data ---------- */
+function onErr(e){if(e&&e.code==='revoked'){status='nodb';render()}}
+
+/* ---------- accounts, access code, roles (Firebase) ---------- */
+const FIREBASE_CONFIG={apiKey:"AIzaSyBTicx4JNMnbSM8O3Qw5BF0Wemm0s0j3Yg",authDomain:"meal-51bc8.firebaseapp.com",projectId:"meal-51bc8",storageBucket:"meal-51bc8.firebasestorage.app",messagingSenderId:"690690680963",appId:"1:690690680963:web:3958a60e9a646738f4d3b6"}; /* optional: paste config here instead of using the setup screen */
+let auth=null,fs=null,me=null,mid=null,role=null,appUsers=[],messTitle='',authMode='in',unsubs=[],started=false,errMsg='';
+const roleBn=r=>({admin:'অ্যাডমিন',editor:'এডিটর',viewer:'ভিউয়ার'})[r]||r;
+const b64e=t=>btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=t=>decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/'))));
+function onErr(e){console.warn(e);if(e&&e.code==='permission-denied')toast('অনুমতি নেই')}
+function stopAll(){subs.forEach(u=>u());subs=[];unsubs.forEach(u=>u());unsubs=[];started=false;cfg=null;months=[];sB=[];sJ=[];sX=[];trash=[];logs=[];appUsers=[];mdoc={};mLoaded=false;ops=[];rd=[];db=null}
+function fbCfg(){
+  if(FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey)return FIREBASE_CONFIG;
+  try{
+    if(location.hash.length>2){
+      const p=new URLSearchParams(location.hash.slice(1));
+      if(p.get('c')){const c=JSON.parse(b64d(p.get('c')));if(c.apiKey)localStorage.setItem('mc:fb',JSON.stringify(c))}
+      if(p.get('j'))localStorage.setItem('mc:j',p.get('j'));
+      history.replaceState(null,'',location.pathname);
+    }
+  }catch(e){}
+  try{return JSON.parse(localStorage.getItem('mc:fb')||'null')}catch(e){return null}
+}
+function init(){
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+  const c=fbCfg();
+  if(!c){status='setup';render();return}
+  try{firebase.initializeApp(c);auth=firebase.auth();fs=firebase.firestore()}catch(e){status='error';errMsg=e.message;render();return}
+  status='loading';render();
+  auth.onAuthStateChanged(async u=>{
+    me=u;stopAll();mid=null;role=null;
+    if(!u){status='login';render();return}
+    status='loading';render();
+    try{
+      const us=await fs.doc('users/'+u.uid).get();
+      mid=us.exists?us.data().mess:null;
+      if(mid)beginMess();else{status='join';render()}
+    }catch(e){status='error';errMsg=e.message;render()}
+  });
+}
+function beginMess(){
+  db={doc:p=>fs.doc('messes/'+mid+'/'+p),collection:p=>fs.collection('messes/'+mid+'/'+p)};
+  myId=me.uid;
+  unsubs.push(fs.doc('messes/'+mid+'/members/'+me.uid).onSnapshot(s=>{
+    if(!s.exists){fs.doc('users/'+me.uid).delete().catch(()=>{});stopAll();mid=null;status='join';render();return}
+    const d=s.data();role=d.role;isAdmin=role==='admin';cw=role!=='viewer';
+    if(!started){started=true;status='ok';startWatch()}
+    render();
+  },e=>{status='error';errMsg=e.message;render()}));
+}
+function startWatch(){
+  unsubs.push(fs.doc('messes/'+mid).onSnapshot(s=>{if(s.exists){messTitle=s.data().title||'';render()}},onErr));
+  unsubs.push(db.doc('config/app').onSnapshot(s=>{cfg=s.exists?s.data():{members:[]};render()},onErr));
+  unsubs.push(db.collection('months').onSnapshot(s=>{months=s.docs.map(d=>d.id);render()},onErr));
+  unsubs.push(db.collection('members').onSnapshot(s=>{appUsers=s.docs.map(d=>({uid:d.id,...d.data()}));appUsers.forEach(u=>pnames[u.uid]=u.name||'');render()},onErr));
+  watchMonth();
+}
+function authErr(e){const c=(e&&e.code)||'';return ({'auth/invalid-email':'ইমেইল ঠিক নেই','auth/missing-password':'পাসওয়ার্ড লিখুন','auth/weak-password':'পাসওয়ার্ড কমপক্ষে ৬ অক্ষর দিন','auth/email-already-in-use':'এই ইমেইলে আগেই অ্যাকাউন্ট আছে','auth/user-not-found':'এই ইমেইলে অ্যাকাউন্ট নেই','auth/wrong-password':'পাসওয়ার্ড ভুল','auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড ভুল','auth/network-request-failed':'ইন্টারনেট নেই','auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে, একটু পরে আবার দিন','auth/operation-not-allowed':'Firebase-এ Email/Password চালু করা হয়নি'})[c]||('সমস্যা হয়েছে: '+c)}
+function setupHTML(){return `<div class="card"><h2>প্রথমবার সেটআপ</h2><div class="note">Firebase থেকে কপি করা firebaseConfig এখানে পেস্ট করুন। ধাপগুলো setup-guide ফাইলে আছে।</div><textarea id="sc" rows="8" style="width:100%;margin:10px 0 8px;font:inherit;background:var(--inp);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px" placeholder="apiKey: ..."></textarea><button class="btn" onclick="saveSetup()">সেভ করুন</button></div>`}
+function saveSetup(){const t=$('#sc').value,c={};t.replace(/(\w+)\s*:\s*["']([^"']+)["']/g,(m,k,v)=>{c[k]=v;return m});if(!c.apiKey||!c.projectId){toast('কনফিগ ঠিক নেই');return}localStorage.setItem('mc:fb',JSON.stringify(c));location.reload()}
+function loginHTML(){const up=authMode==='up';return `<div class="card"><h2>${up?'নতুন অ্যাকাউন্ট খুলুন':'লগইন করুন'}</h2>${up?'<input id="an" type="text" placeholder="তোমার নাম">':''}<input id="ae" type="email" inputmode="email" autocomplete="email" placeholder="ইমেইল"><input id="ap" type="password" autocomplete="${up?'new-password':'current-password'}" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)"><button class="btn" onclick="doAuth()">${up?'অ্যাকাউন্ট খুলুন':'লগইন'}</button><div style="display:flex;justify-content:space-between;margin-top:10px"><button class="lk" onclick="authMode='${up?'in':'up'}';render()">${up?'আগে থেকে অ্যাকাউন্ট আছে? লগইন':'নতুন অ্যাকাউন্ট খুলুন'}</button>${up?'':'<button class="lk" onclick="resetPw()">পাসওয়ার্ড ভুলে গেছ?</button>'}</div></div>`}
+async function doAuth(){
+  const e=$('#ae').value.trim(),p=$('#ap').value,n=$('#an')?$('#an').value.trim():'';
+  try{
+    if(authMode==='up'){
+      if(!n){toast('নাম লিখুন');return}
+      const c=await auth.createUserWithEmailAndPassword(e,p);await c.user.updateProfile({displayName:n});
+    }else await auth.signInWithEmailAndPassword(e,p);
+  }catch(x){toast(authErr(x))}
+}
+function resetPw(){const e=$('#ae').value.trim();if(!e){toast('আগে ইমেইল লিখুন');return}auth.sendPasswordResetEmail(e).then(()=>toast('রিসেট লিংক পাঠানো হয়েছে'),x=>toast(authErr(x)))}
+function joinHTML(){
+  const j=localStorage.getItem('mc:j')||'',nm=esc(me.displayName||'');
+  return `<div class="card"><h2>অ্যাক্সেস কোড দিয়ে জয়েন করুন</h2><input id="jc" type="text" autocapitalize="characters" placeholder="অ্যাক্সেস কোড" value="${esc(j)}"><input id="jn" type="text" placeholder="তোমার নাম" value="${nm}"><button class="btn" onclick="joinMess()">জয়েন করুন</button><div class="note" style="margin-top:8px">জয়েন করার পর অ্যাডমিন তোমাকে এডিটর বা অ্যাডমিন বানাতে পারবে। শুরুতে ভিউয়ার থাকবে।</div></div><div class="card"><h2>নতুন মেস/গ্রুপ খুলুন</h2><input id="cn" type="text" placeholder="মেসের নাম"><input id="cu" type="text" placeholder="তোমার নাম" value="${nm}"><input id="cm" type="text" placeholder="সদস্যদের নাম, কমা দিয়ে (সোম, রিয়াদ, মামুন)"><button class="btn" onclick="createMess()">মেস খুলুন (তুমি অ্যাডমিন হবে)</button></div><button class="lk" onclick="doLogout()">লগ আউট (${esc(me.email||'')})</button>`;
+}
+function genCode(){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',r=new Uint8Array(8);crypto.getRandomValues(r);return Array.from(r,x=>A[x%A.length]).join('')}
+async function joinMess(){
+  const code=$('#jc').value.trim().toUpperCase(),nm=$('#jn').value.trim();
+  if(code.length<4||!nm){toast('কোড আর নাম লিখুন');return}
+  try{
+    await fs.doc('messes/'+code+'/members/'+me.uid).set({name:nm,email:me.email||'',role:'viewer',uid:me.uid,ts:Date.now()});
+    await fs.doc('users/'+me.uid).set({mess:code});
+    localStorage.removeItem('mc:j');mid=code;beginMess();
+  }catch(e){toast('কোড ঠিক নেই বা জয়েন করা যায়নি')}
+}
+async function createMess(){
+  const t=$('#cn').value.trim(),nm=$('#cu').value.trim(),names=$('#cm').value.split(/[,،\n]/).map(x=>x.trim()).filter(Boolean);
+  if(!t||!nm){toast('মেসের নাম আর তোমার নাম লিখুন');return}
+  const code=genCode(),now=Date.now();
+  try{
+    await fs.doc('messes/'+code).set({title:t,createdBy:me.uid,ts:now});
+    await fs.doc('messes/'+code+'/members/'+me.uid).set({name:nm,email:me.email||'',role:'admin',uid:me.uid,ts:now});
+    await fs.doc('messes/'+code+'/config/app').set({members:names.map((n,i)=>({id:'m'+now.toString(36)+i,name:n,active:true}))});
+    await fs.doc('users/'+me.uid).set({mess:code});
+    mid=code;beginMess();
+  }catch(e){toast('মেস খোলা যায়নি ('+(e.code||'')+')')}
+}
+function doLogout(){if(auth)auth.signOut()}
+function copyTxt(t,msg){const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast(msg)}catch(e){toast('কপি করা যায়নি')}a.remove()};try{navigator.clipboard.writeText(t).then(()=>toast(msg),fb)}catch(e){fb()}}
+function inviteText(){
+  const c=fbCfg();let u='https://skshom17-oss.github.io/Meal-Manager/';
+  if(!(FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey)&&c)u+='#c='+b64e(JSON.stringify(c))+'&j='+mid;else u+='#j='+mid;
+  return (messTitle||'মিল ক্যালকুলেটর')+'-এ জয়েন করুন\nলিংক: '+u+'\nঅ্যাক্সেস কোড: '+mid;
+}
+function setRole(uid,r){fs.doc('messes/'+mid+'/members/'+uid).update({role:r}).then(()=>toast('ভূমিকা বদলেছে'),()=>toast('বদলানো যায়নি'))}
+function rmUser(uid){fs.doc('messes/'+mid+'/members/'+uid).delete().then(()=>toast('সরানো হয়েছে'),()=>toast('সরানো যায়নি'))}
+function accessHTML(){
+  let h=`<div class="note">অ্যাডমিন: সব কিছু বদলাতে পারে। এডিটর: বাজার, মিল, জমা লিখতে পারে। ভিউয়ার: শুধু দেখতে পারে।</div>`;
+  if(isAdmin){
+    h+=`<div class="line"><span>অ্যাক্সেস কোড</span><b style="letter-spacing:2px">${esc(mid)}</b></div><button class="btn alt" style="margin-top:8px" onclick="copyTxt(inviteText(),'ইনভাইট কপি হয়েছে')">ইনভাইট লিংক কপি করুন</button><h2 style="margin:16px 0 4px">অ্যাপ ব্যবহারকারী</h2>`;
+    appUsers.forEach(u=>{const self=u.uid===me.uid;
+      h+=`<div class="mrow" style="margin-top:8px"><div><b>${esc(u.name||'—')}</b>${self?' (তুমি)':''}<br><small style="color:var(--mut)">${esc(u.email||'')}</small></div>${self?`<span class="bd">${roleBn(u.role)}</span>`:`<div><select onchange="setRole('${u.uid}',this.value)" style="margin-bottom:4px"><option value="admin"${u.role==='admin'?' selected':''}>অ্যাডমিন</option><option value="editor"${u.role==='editor'?' selected':''}>এডিটর</option><option value="viewer"${u.role==='viewer'?' selected':''}>ভিউয়ার</option></select><button class="btn danger" style="min-height:36px;padding:0 10px" onclick="arm('u${u.uid}',()=>rmUser('${u.uid}'))">${armed==='u'+u.uid?'নিশ্চিত?':'সরান'}</button></div>`}</div>`});
+  }
+  return h+`<button class="btn alt" style="margin-top:12px" onclick="doLogout()">লগ আউট (${esc(me&&me.email||'')})</button>`;
+}
+
+function watchMonth(){
+  subs.forEach(u=>u());subs=[];mLoaded=false;mExists=false;mdoc={};sB=[];sJ=[];sX=[];trash=[];ops=[];rd=[];logs=[];
+  const p='months/'+month;
+  subs.push(db.doc(p).onSnapshot(s=>{mExists=s.exists;mLoaded=true;if(pend)return;mdoc=s.exists?s.data():{};render()},onErr));
+  subs.push(db.collection(p+'/bazar').onSnapshot(s=>{sB=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr));
+  subs.push(db.collection(p+'/jama').onSnapshot(s=>{sJ=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr));
+  subs.push(db.collection(p+'/extra').onSnapshot(s=>{sX=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr));
+  subs.push(db.collection(p+'/trash').orderBy('ts','desc').limit(30).onSnapshot(s=>{trash=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr));
+  subs.push(db.collection(p+'/log').orderBy('ts','desc').limit(40).onSnapshot(s=>{logs=s.docs.map(d=>d.data());resolveNames();render()},onErr));
+}
+let q=Promise.resolve();
+function w(fn,ok){
+  pend++;q=q.then(fn).then(()=>{if(ok)toast(ok)}).catch(e=>{
+    if(e&&e.code==='invalid_argument'){canW=false;render();toast('এডিট করার অনুমতি নেই')}else toast('সেভ হয়নি, আবার চেষ্টা করুন')}).finally(()=>{pend--;if(!pend)sync()});
+  return q;
+}
+function ready(skip){if(!db||!mLoaded){toast('লোড হচ্ছে…');return false}if(!skip&&locked()){toast('মাস বন্ধ আছে');return false}return true}
+async function ensureMonth(p){if(!mExists){await db.doc(p).set({meals:{},created:Date.now()},{merge:true});mExists=true}}
+
+/* ---------- calculation ---------- */
+function calc(){
+  const tb=bazar.reduce((s,b)=>s+(+b.amt||0),0);
+  const ml=meals();
+  const rows=mems(false).map(m=>{
+    let n=0,g=0;for(let d=1;d<=31;d++){n+=+ml[d+'_'+m.id]||0;g+=+ml['g'+d+'_'+m.id]||0}
+    const j=jama.filter(x=>x.who===m.id).reduce((s,x)=>s+(+x.amt||0),0);
+    return{m,ml:n+g,g,j};
+  });
+  const tm=rows.reduce((s,r)=>s+r.ml,0);
+  const rate=tm?tb/tm:0;
+  const te=extra.reduce((s,x)=>s+(+x.amt||0),0),sh=rows.length?te/rows.length:0;
+  rows.forEach(r=>{r.food=r.ml*rate;r.ex=sh;r.bal=r.j-r.food-sh});
+  const tj=rows.reduce((s,r)=>s+r.j,0);
+  const owe=rows.reduce((s,r)=>s+(Math.round(r.bal)<0?-r.bal:0),0);
+  return{tb,tm,rate,rows,tj,cash:tj-tb-te,owe,te,sh};
+}
+function st(r){
+  if(!(r.ml>0||r.j>0||r.ex>0))return{k:'',t:'কোনো হিসাব নেই'};
+  const b=Math.round(r.bal);
+  if(b===0)return{k:'ok',t:'হিসাব ক্লোজ ✓'};
+  return b<0?{k:'owe',t:'দেবে '+f(-r.bal)+' টাকা'}:{k:'get',t:'পাবে '+f(r.bal)+' টাকা'};
+}
+
+/* ---------- views ---------- */
+function banner(){return lockB()+bn2()}
+function bn2(){
+  return month===cur?'':`<div class="banner"><span>${mlabel(month)} দেখছেন</span><button onclick="setMonth('${cur}')">চলতি মাসে ফিরুন</button></div>`;
+}
+function roView(){return (cw||locked())?'':`<div class="card"><div class="note">আপনি শুধু দেখতে পারবেন। এডিট করার জন্য অ্যাডমিনকে বলুন আপনাকে এডিটর বানাতে।</div></div>`}
+function sumHTML(){
+  const c=calc();
+  let h=banner()+`<div class="rate"><div><small>প্রতি মিল রেট</small><span class="big">${f(c.rate)}</span></div><div class="sub"><small>মোট বাজার</small><b>${f(c.tb)}</b><small>মোট মিল</small><b>${f(c.tm)}</b></div></div>`;
+  if(!c.rows.length)h+=`<div class="card"><div class="empty">কোনো সদস্য নেই।${isAdmin?' সেটিং থেকে সদস্য যোগ করুন।':' অ্যাডমিন সদস্য যোগ করলে এখানে দেখা যাবে।'}</div></div>`;
+  c.rows.forEach(r=>{
+    const s=st(r);
+    h+=`<div class="card ${s.k}"><div class="rw"><b class="nm">${esc(r.m.name)}</b><span class="bd ${s.k}">${s.t}</span></div><div class="g3"><div><span>মিল${r.g?' (মেহমান '+f(r.g)+')':''}</span>${f(r.ml)}</div><div><span>মোট খাবার</span>${f(r.food)}</div>${c.te>0?`<div><span>বাড়তি ভাগ</span>${f(r.ex)}</div>`:''}<div><span>মোট জমা</span>${f(r.j)}</div></div></div>`;
+  });
+  h+=`<div class="card"><div class="g3"><div><span>মোট মিল</span>${f(c.tm)}</div><div><span>মোট বাজার</span>${f(c.tb)}</div><div><span>মোট জমা</span>${f(c.tj)}</div></div><div class="line"><span>বাড়তি খরচ (সবাই সমান ভাগ)</span><b>${f(c.te)}</b></div><div class='line'><span>টাকা আছে (জমা − খরচ)</span><b>${f(c.cash)}</b></div><div class="line"><span>মোট বাকি আছে</span><b style="color:${c.owe?'var(--bad)':'var(--good)'}">${f(c.owe)}</b></div></div>`;
+  return h+`<a class='btn' style='display:block;text-align:center;text-decoration:none;margin-bottom:8px;padding-top:12px' target='_blank' rel='noopener' href='https://wa.me/?text=${encodeURIComponent(shareText())}'>WhatsApp-এ পাঠান</a><div class='fr'><button class='btn alt' onclick='share()'>কপি করুন</button><button class='btn alt' onclick='exportCsv()'>CSV ডাউনলোড</button></div>`;
+}
+function opts(){return mems(true).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}
+function memLink(){return isAdmin?`<button class="lk" onclick="go('set')">সদস্য যোগ বা মুছুন</button>`:''}
+function bazarHTML(){return bazarMain()+extraHTML()}
+let bzAll=false,xtAll=false;
+const SER=(a,b)=>(a.d-b.d)||((a.ts||0)-(b.ts||0));
+function wk(d){try{const[y,m]=month.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('bn-BD',{weekday:'short'})}catch(e){return ''}}
+function dayOpts(){const sel=defDay();return Array.from({length:dim()},(_,i)=>`<option value="${i+1}"${i+1===sel?' selected':''}>${i+1} তারিখ (${wk(i+1)})</option>`).join('')}
+function moreBtn(n,all,flag){return n>5?`<button class="btn alt" style="margin-top:8px" onclick="${flag}=!${flag};render()">${all?'কম দেখুন':'আরও দেখুন ('+(n-5)+')'}</button>`:''}
+function bazarMain(){
+  let h=banner()+roView();
+  if(canW)h+=`<div class="card"><h2>নতুন বাজার যোগ করুন</h2><div class="fr"><select id="bd">${dayOpts()}</select><input id="ba" type="number" min="0" inputmode="decimal" placeholder="টাকা"></div><input id="bi" type="text" placeholder="কী কী বাজার (চাল, ডাল, তেল…)"><select id="bw">${opts()}</select>${memLink()}<button class="btn" onclick="addB()">বাজার যোগ করুন</button></div>`;
+  h+=`<div class="card"><h2>বাজারের তালিকা</h2>`;
+  if(!bazar.length)h+=`<div class="empty">এখনো কোনো বাজার নেই।</div>`;
+  [...bazar].sort(SER).slice(0,bzAll?999:5).forEach(b=>{
+    h+=`<div class="it"><div><b>${b.d} তারিখ</b> ${esc(b.items||'')}<br><small>${esc(who(b.who))} বাজার করেছে</small></div><div class="am">${f(b.amt)}${canW?`<button class="x" aria-label="মুছুন" onclick="delE('bazar','${b.id}')">×</button>`:''}</div></div>`;
+  });
+  return h+moreBtn(bazar.length,bzAll,'bzAll')+`</div>`;
+}
+function addB(){
+  const amt=parseFloat($('#ba').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  if(!ready())return;
+  const p='months/'+month,e={d:Math.min(31,Math.max(1,parseInt($('#bd').value)||1)),items:$('#bi').value.trim(),amt,who:$('#bw').value,ts:Date.now()};
+  $('#ba').value='';$('#bi').value='';
+  w(async()=>{await ensureMonth(p);await db.collection(p+'/bazar').add(e);await logE(p,who(e.who)+' '+f(e.amt)+' টাকার বাজার যোগ করেছে')},'বাজার যোগ হয়েছে');
+}
+function delE(col,id){
+  if(!ready())return;const p='months/'+month,x=({bazar,jama,extra})[col].find(i=>i.id===id)||{};
+  const t=col==='jama'?who(x.who)+'-এর '+f(x.amt)+' টাকা জমা মুছেছে':col==='bazar'?f(x.amt)+' টাকার বাজার মুছেছে':f(x.amt)+' টাকার '+(x.name||'বাড়তি খরচ')+' মুছেছে';
+  w(async()=>{await db.doc(p+'/'+col+'/'+id).delete();await logE(p,t)});
+}
+
+function mealHTML(){
+  const n=dim(),ms=mems(false),ml=meals(),dis=canW?'':' disabled';
+  let h=banner()+roView()+quickHTML()+`<div class="sc"><table><thead><tr><th>তারিখ</th>${ms.map(m=>`<th>${esc(m.name)}</th>`).join('')}<th>মোট</th></tr></thead><tbody>`;
+  for(let d=1;d<=n;d++){
+    h+=`<tr><td>${d}</td>`;
+    ms.forEach(m=>{const v=+ml[d+'_'+m.id]||0;h+=`<td><input type="number" min="0" step="0.5" inputmode="decimal" placeholder="0" value="${v||''}" data-d="${d}" data-m="${m.id}"${dis} onchange="setMeal(this)"></td>`});
+    h+=`<td class="dt" id="dt${d}">0</td></tr>`;
+  }
+  return h+`</tbody><tfoot><tr><td>মোট</td>${ms.map(m=>`<td id="mt_${m.id}">0</td>`).join('')}<td id="mt_all">0</td></tr><tr><td>মেহমান</td>${ms.map(m=>`<td id='mg_${m.id}'>0</td>`).join('')}<td id='mg_all'>0</td></tr></tfoot></table></div>`;
+}
+function putMeal(k,v,label){
+  if(!ready())return;const p='months/'+month;v=Math.max(0,Math.round(v*2)/2);
+  mdoc={...mdoc,meals:{...meals(),[k]:v}};render();
+  w(async()=>{if(mExists)await db.doc(p).update({meals:{[k]:v}});else{await db.doc(p).set({meals:{[k]:v},created:Date.now()});mExists=true}if(label)await logE(p,label)});
+}
+function setMeal(el){const v=parseFloat(el.value)||0;putMeal(el.dataset.d+'_'+el.dataset.m,v,who(el.dataset.m)+', '+el.dataset.d+' তারিখ মিল '+f(v))}
+function patchMeal(){
+  const ml=meals(),n=dim(),ms=mems(false);let all=0,ga=0;
+  document.querySelectorAll('#v input[data-d]').forEach(i=>{if(i!==document.activeElement){const v=+ml[i.dataset.d+'_'+i.dataset.m]||0;i.value=v||''}});
+  for(let d=1;d<=n;d++){let s=0;ms.forEach(m=>s+=+ml[d+'_'+m.id]||0);const e=$('#dt'+d);if(e)e.textContent=f(s)}
+  ms.forEach(m=>{let s=0;for(let d=1;d<=n;d++)s+=+ml[d+'_'+m.id]||0;all+=s;const e=$('#mt_'+m.id);if(e)e.textContent=f(s);let g=0;for(let d=1;d<=n;d++)g+=+ml['g'+d+'_'+m.id]||0;ga+=g;const e2=$('#mg_'+m.id);if(e2)e2.textContent=f(g)});
+  const a=$('#mt_all');if(a)a.textContent=f(all);const a2=$('#mg_all');if(a2)a2.textContent=f(ga);
+}
+
+function jamaHTML(){
+  const c=calc();
+  let h=banner()+roView();
+  if(canW)h+=`<div class="card"><h2>নতুন জমা যোগ করুন</h2><select id="jw">${opts()}</select>${memLink()}<div class="fr"><input id="ja" type="number" min="0" inputmode="decimal" placeholder="টাকা"><select id="jd">${dayOpts()}</select></div><button class="btn" onclick="addJ()">জমা যোগ করুন</button></div>`;
+  h+=`<div class="card"><h2>কে কত জমা দিয়েছে</h2>${c.rows.map(r=>{const s=st(r);return `<div class="line" style="border:0;margin:0;padding:4px 0"><span>${esc(r.m.name)}</span><span><b>${f(r.j)}</b> <span class="bd ${s.k}">${s.k==='owe'?s.t:s.k==='ok'?'ক্লোজ ✓':''}</span></span></div>`}).join('')||'<div class="empty">কোনো সদস্য নেই।</div>'}</div>`;
+  h+=`<div class="card"><h2>জমার তালিকা</h2>`;
+  if(!jama.length)h+=`<div class="empty">এখনো কোনো জমা নেই।</div>`;
+  [...jama].sort((a,b)=>b.d-a.d||(b.ts||0)-(a.ts||0)).forEach(j=>{
+    h+=`<div class="it"><div><b>${esc(who(j.who))}</b><br><small>${j.d} তারিখ</small></div><div class="am">${f(j.amt)}${canW?`<button class="x" aria-label="মুছুন" onclick="delE('jama','${j.id}')">×</button>`:''}</div></div>`;
+  });
+  return h+`</div>`;
+}
+function addJ(){
+  const amt=parseFloat($('#ja').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  if(!ready())return;
+  const p='months/'+month,e={who:$('#jw').value,amt,d:Math.min(31,Math.max(1,parseInt($('#jd').value)||1)),ts:Date.now()};
+  $('#ja').value='';
+  w(async()=>{await ensureMonth(p);await db.collection(p+'/jama').add(e);await logE(p,who(e.who)+' '+f(e.amt)+' টাকা জমা দিয়েছে')},'জমা যোগ হয়েছে');
+}
+
+const lockB=()=>locked()?`<div class='banner' style='background:var(--badbg);color:var(--bad)'><span>🔒 এই মাস বন্ধ, এখন কেউ বদলাতে পারবে না</span></div>`:'';
+function logE(p,t){return db.collection(p+'/log').add({ts:Date.now(),by:myId||'',text:t})}
+async function resolveNamesOld(){if(!uapi)return;const ids=[...new Set(logs.map(l=>l.by).filter(i=>i&&!(i in pnames)))];if(!ids.length)return;ids.forEach(i=>pnames[i]='');try{const ps=await uapi.profiles(ids);ids.forEach(i=>{pnames[i]=(ps[i]&&ps[i].name)||''});render()}catch(e){}}
+function sync(){if(!db||!mLoaded)return;const m=month;db.doc('months/'+m).get().then(s=>{if(!pend&&m===month){mdoc=s.exists?s.data():{};mExists=s.exists;render()}}).catch(()=>{})}
+let logAll=false;
+function logHTML(){
+  if(!logs.length)return `<div class='empty'>এখনো কোনো পরিবর্তন নেই।</div>`;
+  const rows=logAll?logs:logs.slice(0,10);
+  let h=rows.map(l=>`<div class='it'><div>${esc(l.text)}<br><small>${esc(pnames[l.by]||'কেউ একজন')} · ${new Date(l.ts).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</small></div></div>`).join('');
+  if(logs.length>10)h+=`<button class='btn alt' style='margin-top:8px' onclick='logAll=!logAll;render()'>${logAll?'কম দেখুন':'আরও দেখুন ('+(logs.length-10)+')'}</button>`;
+  return h;
+}
+function extraHTML(){
+  let h='';
+  if(canW)h+=`<div class='card'><h2>বাড়তি খরচ (সবাই সমান ভাগ)</h2><div class='fr'><select id='xd'>${dayOpts()}</select><input id='xa' type='number' min='0' inputmode='decimal' placeholder='টাকা'></div><input id='xn' type='text' placeholder='কীসের খরচ (গ্যাস, ওয়াইফাই, বুয়া…)'><button class='btn' onclick='addX()'>খরচ যোগ করুন</button></div>`;
+  h+=`<div class='card'><h2>বাড়তি খরচের তালিকা</h2>`;
+  if(!extra.length)h+=`<div class='empty'>গ্যাস, ওয়াইফাই, বিলের মতো খরচ এখানে যোগ করুন। সব সদস্য সমান ভাগ দেবে।</div>`;
+  [...extra].sort(SER).slice(0,xtAll?999:5).forEach(x=>{h+=`<div class='it'><div><b>${x.d} তারিখ</b> ${esc(x.name||'')}</div><div class='am'>${f(x.amt)}${canW?`<button class='x' aria-label='মুছুন' onclick="delE('extra','${x.id}')">×</button>`:''}</div></div>`});
+  return h+moreBtn(extra.length,xtAll,'xtAll')+`</div>`;
+}
+function addX(){
+  const amt=parseFloat($('#xa').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  if(!ready())return;
+  const p='months/'+month,e={d:Math.min(31,Math.max(1,parseInt($('#xd').value)||1)),name:$('#xn').value.trim(),amt,ts:Date.now()};
+  $('#xa').value='';$('#xn').value='';
+  w(async()=>{await ensureMonth(p);await db.collection(p+'/extra').add(e);await logE(p,f(amt)+' টাকার '+(e.name||'বাড়তি খরচ')+' যোগ হয়েছে')},'খরচ যোগ হয়েছে');
+}
+function qDay(){return qd&&qd<=dim()?qd:defDay()}
+function stp(k,v,id,l){return `<div class='sp'><small>${l}</small><div><button class='x2' data-k='${k}' data-i='${id}' data-s='-1' onclick='stepM(this)'>−</button><b>${f(v)}</b><button class='x2' data-k='${k}' data-i='${id}' data-s='1' onclick='stepM(this)'>+</button></div></div>`}
+function quickHTML(){
+  if(!canW)return '';
+  const ms=mems(true),ml=meals(),d=qDay();
+  let h=`<div class='card'><h2>দৈনিক মিল এন্ট্রি</h2><select id='qd' onchange='qd=+this.value;render()'>${Array.from({length:dim()},(_,i)=>`<option value='${i+1}'${i+1===d?' selected':''}>${i+1} তারিখ${month===cur&&i+1===new Date().getDate()?' (আজ)':''}</option>`).join('')}</select>`;
+  ms.forEach(m=>{h+=`<div class='it'><b style='min-width:64px'>${esc(m.name)}</b><div class='stp'>${stp(d+'_'+m.id,+ml[d+'_'+m.id]||0,m.id,'মিল')}${stp('g'+d+'_'+m.id,+ml['g'+d+'_'+m.id]||0,m.id,'মেহমান')}</div></div>`});
+  return h+`<button class='btn alt' onclick='allOne(${d})'>সবাই ১ মিল</button></div>`;
+}
+function stepM(el){const k=el.dataset.k,id=el.dataset.i,v=(+meals()[k]||0)+(+el.dataset.s);if(v<0)return;putMeal(k,v,who(id)+', '+k.replace('g','').split('_')[0]+' তারিখ '+(k[0]==='g'?'মেহমান ':'')+'মিল '+f(v))}
+function allOne(d){if(!ready())return;mems(true).forEach(m=>putMeal(d+'_'+m.id,1,null));w(()=>logE('months/'+month,d+' তারিখ সবার মিল ১ করা হয়েছে'))}
+function toggleLock(){
+  if(!ready(true))return;const p='months/'+month,v=!locked();
+  w(async()=>{await ensureMonth(p);await db.doc(p).update({locked:v});await logE(p,v?'মাস বন্ধ করা হয়েছে':'মাস খোলা হয়েছে')},v?'মাস বন্ধ হয়েছে':'মাস খোলা হয়েছে');
+}
+async function exportCsv(){
+  
+  const c=calc(),Q=String.fromCharCode(34),q=v=>typeof v==='number'?v:Q+String(v).split(Q).join(Q+Q)+Q,r2=n=>Math.round(n*100)/100,L=[];
+  L.push(['সামারি',mlabel(month)]);
+  L.push(['নাম','মিল','মেহমান মিল','মোট খাবার','বাড়তি ভাগ','মোট জমা','বাকি/পাওনা','অবস্থা']);
+  c.rows.forEach(r=>L.push([r.m.name,r.ml,r.g,r2(r.food),r2(r.ex),r.j,r2(r.bal),st(r).t]));
+  L.push(['মোট বাজার',c.tb,'মোট মিল',c.tm,'প্রতি মিল রেট',r2(c.rate),'বাড়তি খরচ',c.te]);
+  L.push([]);L.push(['বাজার']);L.push(['তারিখ','বিবরণ','টাকা','কে করেছে']);
+  bazar.forEach(b=>L.push([b.d,b.items||'',b.amt,who(b.who)]));
+  L.push([]);L.push(['বাড়তি খরচ']);L.push(['তারিখ','বিবরণ','টাকা']);
+  extra.forEach(x=>L.push([x.d,x.name||'',x.amt]));
+  L.push([]);L.push(['জমা']);L.push(['তারিখ','নাম','টাকা']);
+  jama.forEach(j=>L.push([j.d,who(j.who),j.amt]));
+  const ms=mems(false),ml=meals();
+  L.push([]);L.push(['মিল (তারিখ অনুযায়ী)']);L.push(['তারিখ',...ms.map(m=>m.name),...ms.map(m=>m.name+' (মেহমান)')]);
+  for(let d=1;d<=dim();d++)L.push([d,...ms.map(m=>+ml[d+'_'+m.id]||0),...ms.map(m=>+ml['g'+d+'_'+m.id]||0)]);
+  const txt='\uFEFF'+L.map(r=>r.map(q).join(',')).join('\r\n');
+  const bl=new Blob([txt],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='meal-'+month+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function allMonths(){return [...new Set([...months,cur,month])].sort().reverse()}
+function setHTML(){
+  let h=`<div class="card"><h2>মাস</h2><select id="mp" onchange="setMonth(this.value)">${allMonths().map(m=>`<option value="${m}"${m===month?' selected':''}>${mlabel(m)}${m===cur?' (চলতি)':''}</option>`).join('')}</select>`;
+  if(canW)h+=`<div class="mrow"><input id="nmo" type="month" value="${month}"><button class="btn alt" onclick="openMonth()">খুলুন</button></div>`;
+  h+=`<div class="note">প্রতি মাসের হিসাব আলাদা থাকে। আগের মাস বেছে নিলে তার পুরো হিসাব দেখা যাবে।</div></div>`;
+  if(cw)h+=`<div class="card"><h2>মেসের নাম</h2><div class="mrow"><input id="mt" type="text" value="${esc(messTitle)}" placeholder="মেসের নাম"><button class="btn" onclick="renMess()">সেভ</button></div><div class="note">অ্যাডমিন ও এডিটর এই নাম বদলাতে পারবে। নামটা সবার অ্যাপের উপরে দেখা যাবে।</div></div>`;
+  if(isAdmin){
+    const all=MEM(),act=all.filter(m=>m.active!==false),gone=all.filter(m=>m.active===false);
+    h+=`<div class="card"><h2>সদস্য</h2>`;
+    act.forEach(m=>{h+=`<div class="mrow"><input type="text" value="${esc(m.name)}" onchange="renM('${m.id}',this.value)"><button class="btn danger" onclick="arm('d${m.id}',()=>rmM('${m.id}'))">${armed==='d'+m.id?'নিশ্চিত?':'সরান'}</button></div>`});
+    h+=`<div class="mrow"><input id="nm" type="text" placeholder="নতুন সদস্যের নাম"><button class="btn" onclick="addM()">যোগ</button></div>`;
+    h+=`<div class="note">সরানো সদস্যের আগের মাসের হিসাব ঠিক থাকে। নতুন বাজার বা জমায় তাকে আর দেখাবে না।</div></div>`;
+    if(gone.length)h+=`<div class="card"><h2>সরানো সদস্য</h2>${gone.map(m=>`<div class="mrow"><div style="padding:10px 0">${esc(m.name)}</div><div style="display:flex;gap:6px"><button class="btn alt" onclick="restM('${m.id}')">ফিরিয়ে আনুন</button><button class="btn danger" onclick="arm('x${m.id}',()=>purgeM('${m.id}'))">${armed==='x'+m.id?'নিশ্চিত?':'মুছুন'}</button></div></div>`).join('')}</div>`;
+    h+=trashHTML();h+=`<div class="card"><h2>এই মাসের হিসাব</h2><button class='btn alt' style='margin-bottom:8px' onclick='toggleLock()'>${locked()?'🔓 মাস খুলুন':'🔒 মাস বন্ধ করুন'}</button><button class="btn danger" onclick="arm('rst',resetMonth)">${armed==='rst'?'আবার ট্যাপ করে নিশ্চিত করুন':mlabel(month)+'-এর সব তথ্য মুছুন'}</button></div>`;
+  }
+  h+=`<div class="card"><h2>সাম্প্রতিক পরিবর্তন</h2><div class="${logAll?'logbox':''}">${logHTML()}</div></div><div class='card'><h2>অ্যাক্সেস ও অ্যাকাউন্ট</h2>${accessHTML()}</div>`;
+  return h;
+}
+function go(t){tab=t;armed=null;render();window.scrollTo(0,0)}
+function setMonth(m){if(!m||!db)return;if(ops.length&&m!==month){toast('আগে সেভ করুন');render();return}month=m;watchMonth();render()}
+function openMonth(){const v=$('#nmo').value;if(v)setMonth(v)}
+function saveMembers(l,ok,lg){if(!db)return;w(async()=>{await db.doc('config/app').set({members:l});if(lg)await logE('months/'+month,lg)},ok)}
+function addM(){
+  const n=$('#nm').value.trim();if(!n){toast('নাম লিখুন');return}
+  $('#nm').value='';
+  saveMembers([...MEM(),{id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:n,active:true}],'সদস্য যোগ হয়েছে',n+' সদস্য হিসেবে যোগ হয়েছে');
+}
+function renM(id,v){v=v.trim();if(!v)return;saveMembers(MEM().map(m=>m.id===id?{...m,name:v}:m),'নাম বদলেছে')}
+function rmM(id){saveMembers(MEM().map(m=>m.id===id?{...m,active:false}:m),'সদস্য সরানো হয়েছে',who(id)+' সদস্য থেকে সরানো হয়েছে')}
+function restM(id){saveMembers(MEM().map(m=>m.id===id?{...m,active:true}:m),'সদস্য ফিরে এসেছে')}
+function resetMonth(){
+  if(!ready())return;const p='months/'+month,b=[...bazar],j=[...jama];
+  w(async()=>{for(const x of b)await db.doc(p+'/bazar/'+x.id).delete();for(const x of j)await db.doc(p+'/jama/'+x.id).delete();for(const x of extra)await db.doc(p+'/extra/'+x.id).delete();await db.doc(p).set({meals:{},created:Date.now()},{merge:true});mExists=true;await logE(p,'মাসের সব তথ্য মুছে ফেলা হয়েছে')},'মাসের তথ্য মুছে গেছে');
+}
+function arm(k,fn){
+  if(armed===k){armed=null;fn();return}
+  armed=k;render();
+  setTimeout(()=>{if(armed===k){armed=null;render()}},3000);
+}
+function shareText(){
+  const c=calc();
+  let t=`মিল সামারি (${mlabel(month)})\nমোট বাজার: ${f(c.tb)} | মোট মিল: ${f(c.tm)} | প্রতি মিল: ${f(c.rate)}\n`;
+  c.rows.forEach(r=>{t+=`${r.m.name}: মিল ${f(r.ml)}, খাবার ${f(r.food)}, জমা ${f(r.j)} → ${st(r).t}\n`});
+  t+=`বাড়তি খরচ: ${f(c.te)} | টাকা আছে: ${f(c.cash)}`;return t}
+function share(){
+  const t=shareText();
+  const done=()=>toast('কপি হয়েছে');
+  const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){toast('কপি করা যায়নি')}a.remove()};
+  try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}
+}
+
+/* ---------- render ---------- */
+function render(){
+  $('#mb').textContent=mlabel(month);
+  const rc=$('#rc');
+  if(status==='ok'){rc.hidden=false;rc.textContent=isAdmin?'অ্যাডমিন':cw?'এডিটর':'ভিউয়ার'}else rc.hidden=true;
+  const eb=$('#eb');eb.hidden=true;$('#nv').style.display=status==='ok'?'':'none';$('header h1').textContent=messTitle||'মিল ক্যালকুলেটর';eb.textContent=editing?'✓ এডিট চলছে':'✎ এডিট করুন';eb.style.background=editing?'var(--good)':'';eb.style.color=editing?'#fff':'';
+  syncEff();updBar();
+  document.querySelectorAll('#nv button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  const v=$('#v');
+  if(status==='loading'){v.innerHTML='<div class="card"><div class="empty">লোড হচ্ছে…</div></div>';return}
+  if(status==='login'){v.innerHTML=loginHTML();return}if(status==='join'){v.innerHTML=joinHTML();return}if(status==='setup'){v.innerHTML=setupHTML();return}if(status==='error'){v.innerHTML='<div class="card"><h2>সমস্যা হয়েছে</h2><div class="note">'+esc(errMsg)+'</div></div>';return}if(status==='nodb'){v.innerHTML='<div class="card"><h2>অনলাইন ডেটা চালু নেই</h2><div class="note">Claude-এ সাইন ইন করে অ্যাডমিনের পাঠানো লিংক থেকে অ্যাপটি খুলুন। তাহলে সবাই একই হিসাব দেখতে পাবে।</div></div>';return}
+  if(cfg===null){v.innerHTML='<div class="card"><div class="empty">লোড হচ্ছে…</div></div>';return}
+  const ae=document.activeElement;
+  if(tab==='meal'&&ae&&ae.dataset&&ae.dataset.d&&v.contains(ae)){patchMeal();return}
+  const saved={};v.querySelectorAll('input[id],select[id]').forEach(e=>saved[e.id]=e.value);
+  const fid=ae&&v.contains(ae)&&ae.id?ae.id:null;
+  const y=window.scrollY;
+  v.innerHTML=({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]();
+  Object.keys(saved).forEach(id=>{if(id==='mp')return;const e=document.getElementById(id);if(e)e.value=saved[id]});
+  if(fid){const e=document.getElementById(fid);if(e)e.focus()}
+  if(tab==='meal')patchMeal();
+  window.scrollTo(0,y);
+}
+$('#nv').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.t)});
+$('#mb').addEventListener('click',()=>go('set'));
+/* ---- staged edits: undo / redo / save / done ---- */
+const clampD=v=>Math.min(31,Math.max(1,parseInt(v)||1));
+const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function ap(o,S){
+  if(o.t==='batch')o.ops.forEach(x=>ap(x,S));
+  else if(o.t==='add')S[o.c]=[...S[o.c].filter(x=>x.id!==o.id),{...o.d,id:o.id}];
+  else if(o.t==='del')S[o.c]=S[o.c].filter(x=>x.id!==o.id);
+  else if(o.t==='meal')S.M={...S.M,[o.k]:o.v};
+  else if(o.t==='lock')S.lock=o.v;
+  else if(o.t==='mem')S.mem=o.l;
+}
+function syncEff(){
+  const S={bazar:sB,jama:sJ,extra:sX,M:{...((mdoc&&mdoc.meals)||{})},lock:!!(mdoc&&mdoc.locked),mem:(cfg&&cfg.members)||[]};
+  ops.forEach(o=>ap(o,S));
+  eff=S;bazar=S.bazar;jama=S.jama;extra=S.extra;return S;
+}
+const E=()=>eff||syncEff();
+function stage(o){
+  if(!editing){toast('আগে উপরে ✎ এডিট করুন চাপুন');return false}
+  if(!ready(o.t==='lock'))return false;
+  ops.push(o);rd=[];render();return true;
+}
+function undo(){if(ops.length){rd.push(ops.pop());render()}}
+function redo(){if(rd.length){ops.push(rd.pop());render()}}
+async function flush(){
+  if(!ops.length)return true;
+  if(!db||!mLoaded){toast('লোড হচ্ছে…');return false}
+  const p='months/'+month,list=[],lgs=ops.map(o=>o.lg).filter(Boolean),mm={};
+  const fl=o=>o.t==='batch'?o.ops.forEach(fl):list.push(o);ops.forEach(fl);
+  toast('সেভ হচ্ছে…');pend++;let ok=true;
+  try{
+    await ensureMonth(p);
+    for(const o of list){
+      if(o.t==='add')await db.doc(p+'/'+o.c+'/'+o.id).set(o.d);
+      else if(o.t==='del'){if(o.d)await db.doc(p+'/trash/'+o.id).set({col:o.c,d:o.d,ts:Date.now(),by:myId||''});await db.doc(p+'/'+o.c+'/'+o.id).delete()}
+      else if(o.t==='trashmeal'){await db.doc(p+'/trash/m'+Date.now().toString(36)).set({col:'meals',d:o.m,ts:Date.now(),by:myId||''})}
+      else if(o.t==='meal')mm[o.k]=o.v;
+      else if(o.t==='lock')await db.doc(p).update({locked:o.v});
+      else if(o.t==='mem')await db.doc('config/app').set({members:o.l});
+    }
+    if(Object.keys(mm).length)await db.doc(p).set({meals:mm},{merge:true});
+    for(const t of lgs)await logE(p,t);
+    ops=[];rd=[];
+  }catch(e){ok=false;toast(e&&e.code==='invalid_argument'?'সেভ করার অনুমতি নেই':'সেভ হয়নি, আবার চেষ্টা করুন')}
+  pend--;if(!pend)sync();render();return ok;
+}
+async function saveAll(){if(await flush())toast('সেভ হয়েছে ✓')}
+async function doneEdit(){if(ops.length&&!(await flush()))return;editing=false;go('summary');toast('শেষ হয়েছে ✓')}
+function toggleEdit(){if(editing)doneEdit();else{editing=true;render()}}
+function updBar(){
+  const b=$('#bar'),on=status==='ok'&&cw;
+  b.hidden=!on;document.body.style.paddingBottom=on?'150px':'';
+  if(!on)return;
+  b.innerHTML=`<button class='x3' aria-label='আনডু' title='আনডু' ${ops.length?'':'disabled'} onclick='undo()'>↶</button><button class='x3' aria-label='রিডু' title='রিডু' ${rd.length?'':'disabled'} onclick='redo()'>↷</button><span class='cnt'>${ops.length?ops.length+' টি সেভ বাকি':'সব সেভ আছে ✓'}</span><button class='btn' style='width:auto;padding:0 16px' ${ops.length?'':'disabled'} onclick='saveAll()'>সেভ</button>`;
+}
+function addB(){
+  const amt=parseFloat($('#ba').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  const e={d:clampD($('#bd').value),items:$('#bi').value.trim(),amt,who:$('#bw').value,ts:Date.now()};
+  if(stage({t:'add',c:'bazar',id:nid(),d:e,lg:who(e.who)+' '+f(amt)+' টাকার বাজার যোগ করেছে'})){$('#ba').value='';$('#bi').value=''}
+}
+function addJ(){
+  const amt=parseFloat($('#ja').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  const e={who:$('#jw').value,amt,d:clampD($('#jd').value),ts:Date.now()};
+  if(stage({t:'add',c:'jama',id:nid(),d:e,lg:who(e.who)+' '+f(amt)+' টাকা জমা দিয়েছে'}))$('#ja').value='';
+}
+function addX(){
+  const amt=parseFloat($('#xa').value);
+  if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
+  const e={d:clampD($('#xd').value),name:$('#xn').value.trim(),amt,ts:Date.now()};
+  if(stage({t:'add',c:'extra',id:nid(),d:e,lg:f(amt)+' টাকার '+(e.name||'বাড়তি খরচ')+' যোগ হয়েছে'})){$('#xa').value='';$('#xn').value=''}
+}
+function delE(col,id){
+  const x=({bazar,jama,extra})[col].find(i=>i.id===id);if(!x)return;
+  const t=col==='jama'?who(x.who)+'-এর '+f(x.amt)+' টাকা জমা মুছেছে':col==='bazar'?f(x.amt)+' টাকার বাজার মুছেছে':f(x.amt)+' টাকার '+(x.name||'বাড়তি খরচ')+' মুছেছে';
+  const {id:_i,...dd}=x;stage({t:'del',c:col,id,d:dd,lg:t});
+}
+function putMeal(k,v,label){stage({t:'meal',k,v:Math.max(0,Math.round(v*2)/2),lg:label||''})}
+function allOne(d){stage({t:'batch',ops:mems(true).map(m=>({t:'meal',k:d+'_'+m.id,v:1})),lg:d+' তারিখ সবার মিল ১ করা হয়েছে'})}
+function saveMembers(l,ok,lg){stage({t:'mem',l,lg:lg||''})}
+function toggleLock(){const v=!locked();stage({t:'lock',v,lg:v?'মাস বন্ধ করা হয়েছে':'মাস খোলা হয়েছে'})}
+function resetMonth(){
+  const l=[];['bazar','jama','extra'].forEach(c=>E()[c].forEach(x=>{const {id:_i,...dd}=x;l.push({t:'del',c,id:x.id,d:dd})}));
+  if(Object.keys(meals()).some(k=>meals()[k]))l.push({t:'trashmeal',m:{...meals()}});
+  Object.keys(meals()).forEach(k=>l.push({t:'meal',k,v:0}));
+  stage({t:'batch',ops:l,lg:'মাসের সব তথ্য মুছে ফেলা হয়েছে'});
+}
+function renMess(){
+  const v=$('#mt').value.trim(),old=messTitle;
+  if(!v){toast('নাম লিখুন');return}
+  if(v===old){toast('নাম আগের মতোই আছে');return}
+  fs.doc('messes/'+mid).update({title:v}).then(()=>{toast('মেসের নাম বদলেছে');logE('months/'+month,'মেসের নাম "'+old+'" থেকে "'+v+'" করা হয়েছে').catch(()=>{})},()=>toast('বদলানো যায়নি'));
+}
+let trash=[],trashAll=false;
+function trashDesc(t){
+  const d=t.d||{};
+  if(t.col==='bazar')return 'বাজার: '+d.d+' তারিখ '+(d.items||'')+' · '+f(d.amt)+' টাকা';
+  if(t.col==='jama')return 'জমা: '+who(d.who)+' · '+f(d.amt)+' টাকা ('+d.d+' তারিখ)';
+  if(t.col==='extra')return 'বাড়তি খরচ: '+d.d+' তারিখ '+(d.name||'')+' · '+f(d.amt)+' টাকা';
+  if(t.col==='meals')return 'মিলের হিসাব ('+Object.keys(d).filter(k=>d[k]).length+'টা ঘর)';
+  return '';
+}
+function trashHTML(){
+  if(!isAdmin)return '';
+  let h='<div class="card"><h2>মুছে ফেলা তথ্য</h2>';
+  if(!trash.length)return h+'<div class="note">এই মাসে মুছে ফেলা কিছু নেই।</div></div>';
+  h+=`<button class="btn" style="margin-bottom:8px" onclick="restoreAll()">সব ফিরিয়ে আনুন (${trash.length})</button>`;
+  trash.slice(0,trashAll?30:5).forEach(t=>{h+=`<div class="it"><div>${esc(trashDesc(t))}<br><small>${new Date(t.ts).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</small></div><button class="btn alt" style="width:auto;padding:0 12px;min-height:38px" onclick="restoreOne('${t.id}')">ফিরিয়ে আনুন</button></div>`});
+  return h+moreBtn(trash.length,trashAll,'trashAll')+'<div class="note" style="margin-top:8px">শুধু অ্যাডমিন এটা দেখতে ও ফিরিয়ে আনতে পারে।</div></div>';
+}
+async function restoreDoc(t,p){
+  if(t.col==='meals')await db.doc(p).set({meals:t.d},{merge:true});
+  else await db.doc(p+'/'+t.col+'/'+t.id).set(t.d);
+  await db.doc(p+'/trash/'+t.id).delete();
+}
+function restoreOne(id){
+  const t=trash.find(x=>x.id===id);if(!t||!isAdmin||!ready(true))return;
+  const p='months/'+month;toast('ফিরিয়ে আনা হচ্ছে…');
+  (async()=>{try{await ensureMonth(p);await restoreDoc(t,p);await logE(p,'মুছে ফেলা তথ্য ফিরিয়ে আনা হয়েছে');toast('ফিরিয়ে আনা হয়েছে ✓')}catch(e){toast('ফেরানো যায়নি')}})();
+}
+function restoreAll(){
+  if(!trash.length||!isAdmin||!ready(true))return;
+  const list=[...trash],p='months/'+month;toast('ফিরিয়ে আনা হচ্ছে…');
+  (async()=>{try{await ensureMonth(p);for(const t of list)await restoreDoc(t,p);await logE(p,'মুছে ফেলা সব তথ্য ফিরিয়ে আনা হয়েছে');toast('সব ফিরিয়ে আনা হয়েছে ✓')}catch(e){toast('ফেরানো যায়নি')}})();
+}
+async function purgeM(id){
+  let used=false;
+  try{
+    for(const ym of months){
+      const d=await db.doc('months/'+ym).get();
+      const ml=(d.exists&&d.data().meals)||{};
+      if(Object.keys(ml).some(k=>k.endsWith('_'+id)&&ml[k])){used=true;break}
+      for(const c of ['jama','bazar']){
+        const r=await db.collection('months/'+ym+'/'+c).where('who','==',id).limit(1).get();
+        if(!r.empty){used=true;break}
+      }
+      if(used)break;
+    }
+  }catch(e){toast('যাচাই করা যায়নি');return}
+  if(used){toast('পুরনো হিসাব আছে, মুছা যাবে না');return}
+  saveMembers(MEM().filter(m=>m.id!==id),'',who(id)+' সদস্য স্থায়ীভাবে মুছে ফেলা হয়েছে');
+  toast('সেভ চাপলে মুছে যাবে');
+}
+window.addEventListener('beforeunload',e=>{if(ops.length){e.preventDefault();e.returnValue=''}});
+init();
+</script>
+</body>
+</html>
