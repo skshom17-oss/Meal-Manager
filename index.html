@@ -358,7 +358,7 @@ function jamaHTML(){
   const c=calc();
   let h=banner()+roView();
   if(canW)h+=`<div class="card"><h2>নতুন জমা যোগ করুন</h2><select id="jw">${opts()}</select>${memLink()}<div class="fr"><input id="ja" type="number" min="0" inputmode="decimal" placeholder="টাকা"><select id="jd">${dayOpts()}</select></div><button class="btn" onclick="addJ()">জমা যোগ করুন</button></div>`;
-  h+=`<div class="card"><h2>কে কত জমা দিয়েছে</h2>${c.rows.map(r=>{const s=st(r);return `<div class="line" style="border:0;margin:0;padding:4px 0"><span>${esc(r.m.name)}</span><span><b>${f(r.j)}</b> <span class="bd ${s.k}">${s.k==='owe'?s.t:s.k==='ok'?'ক্লোজ ✓':''}</span></span></div>`}).join('')||'<div class="empty">কোনো সদস্য নেই।</div>'}</div>`;
+  h+=`<div class="card"><h2>কে কত জমা দিয়েছে</h2>${c.rows.map(r=>{return `<div class="line" style="border:0;margin:0;padding:4px 0"><span>${esc(r.m.name)}</span><b>${f(r.j)}</b></div>`}).join('')||'<div class="empty">কোনো সদস্য নেই।</div>'}</div>`;
   h+=`<div class="card"><h2>জমার তালিকা</h2>`;
   if(!jama.length)h+=`<div class="empty">এখনো কোনো জমা নেই।</div>`;
   [...jama].sort((a,b)=>b.d-a.d||(b.ts||0)-(a.ts||0)).forEach(j=>{
