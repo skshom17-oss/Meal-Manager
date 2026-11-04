@@ -81,6 +81,21 @@ tfoot td:first-child{background:var(--inp)}
 .x3{font:inherit;font-size:20px;font-weight:700;border:1px solid var(--line);background:var(--inp);color:var(--ink);border-radius:8px;width:44px;min-height:44px;cursor:pointer}button:disabled{opacity:.4;cursor:default}.cnt{flex:1;font-size:13px;color:var(--mut);line-height:1.2}
 .credit{text-align:center;color:var(--mut);font-size:13px;padding:0 0 12px}
 .logbox{max-height:300px;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid var(--line);padding-right:4px}
+.jsum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.jsc{background:linear-gradient(135deg,var(--navy),#2c4170);color:#fff;border-radius:14px;padding:12px 14px}
+.jsc span{display:block;font-size:12.5px;opacity:.78}.jsc b{font-size:22px;color:var(--acc)}
+.jmc{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer}
+.av{width:42px;height:42px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex:none}
+.jmi{flex:1;min-width:0}.jmi b{display:block;font-size:17px}.jmi small{display:block;color:var(--mut);font-size:12.5px}
+.jmt{text-align:right}.jmt span{display:block;font-size:12px;color:var(--mut)}.jmt b{font-size:19px;color:var(--good)}
+.jh{margin:-4px 0 10px;padding:6px 12px;background:var(--inp);border-radius:10px}.jr{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+.mdb{position:fixed;inset:0;background:rgba(8,14,28,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.mds{width:100%;max-width:560px;max-height:88vh;overflow-y:auto;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.mdb.anim{animation:fadeIn .2s ease}.mdb.anim .mds{animation:slideUp .28s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
+.mdh{display:flex;align-items:center;gap:12px;margin-bottom:12px}.mdh b{font-size:19px;display:block}.mdh small{color:var(--mut)}.mdh .x{margin-left:auto}
+.jin{width:96px!important;margin:0!important;min-height:36px!important}
+.sbtn{width:auto!important;min-height:34px!important;padding:0 11px!important;font-size:14px}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
 nav button{font:inherit;font-size:14px;font-weight:500;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:8px;cursor:pointer;min-height:44px}
 nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
@@ -98,7 +113,7 @@ nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
 <button data-t="jama">জমা</button>
 <button data-t="set">সেটিং</button>
 </nav>
-<div id='bar' hidden></div><div id="toast"></div>
+<div id='bar' hidden></div><div id='md'></div><div id="toast"></div>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -354,17 +369,87 @@ function patchMeal(){
   const a=$('#mt_all');if(a)a.textContent=f(all);const a2=$('#mg_all');if(a2)a2.textContent=f(ga);
 }
 
+function resolveNames(){}
+let jmQ='',jmAll=false,jmDate=null,jmM=null,jmEdit=null,jmEdFor=null,jmEdVal=null,jmAnim=false;
+function fmtD(d){const[y,m]=month.split('-');return String(d).padStart(2,'0')+'-'+m+'-'+y}
+function jmDeps(id){return jama.filter(x=>x.who===id).sort((a,b)=>(a.d-b.d)||((a.ts||0)-(b.ts||0)))}
+function jmEff(){
+  if(jmDate&&jmDate.slice(0,7)===month)return jmDate;
+  if(jmDate==='')return '';
+  return month===cur?cur+'-'+String(new Date().getDate()).padStart(2,'0'):'';
+}
+function jmSummary(c){
+  const today=month===cur?new Date().getDate():0;
+  const sum=l=>l.reduce((s,x)=>s+(+x.amt||0),0);
+  const td=today?sum(jama.filter(x=>+x.d===today)):null;
+  const cards=[['মোট সদস্য',c.rows.length],['মোট জমা','৳'+f(sum(jama))],['আজকের জমা',td===null?'—':'৳'+f(td)],['মোট লেনদেন',jama.length]];
+  return `<div class='jsum'>${cards.map(a=>`<div class='jsc'><span>${a[0]}</span><b>${a[1]}</b></div>`).join('')}</div>`;
+}
+function jmBar(){
+  const e=jmEff(),parts=month.split('-'),last=String(dim()).padStart(2,'0');
+  return `<div class='card'><h2>তারিখ ও খোঁজ</h2><div class='fr'><input id='jf' type='date' min='${parts[0]}-${parts[1]}-01' max='${parts[0]}-${parts[1]}-${last}' value='${e}' onchange='jmDate=this.value;render()'><button class='btn alt' onclick='jmDate="";render()'>সব তারিখ</button></div><input id='jq' type='search' placeholder='সদস্যের নাম খুঁজুন' value='${esc(jmQ)}' oninput='jmQ=this.value;jmRedraw()'></div>`;
+}
+function jmCard(r,deps,day,hist){
+  const last=deps.length?deps[deps.length-1]:null;
+  const dd=day?deps.filter(x=>+x.d===day).reduce((s,x)=>s+(+x.amt||0),0):null;
+  return `<div class='jmc' onclick='openJM("${r.m.id}")'><div class='av'>${esc([...r.m.name][0]||'?')}</div><div class='jmi'><b>${esc(r.m.name)}</b><small>${last?'সর্বশেষ জমা: '+fmtD(last.d):'এখনো জমা নেই'}</small>${day?`<small>${fmtD(day)}: ৳${f(dd)}</small>`:''}</div><div class='jmt'><span>মোট জমা</span><b>৳${f(r.j)}</b></div></div>${hist&&deps.length?`<div class='jh'>${deps.map(x=>`<div class='jr'><span>${fmtD(x.d)}</span><b>৳${f(x.amt)}</b></div>`).join('')}</div>`:''}`;
+}
+function jmCards(c){
+  c=c||calc();
+  if(!c.rows.length)return `<div class='card'><div class='empty'>কোনো সদস্য নেই।</div></div>`;
+  const q=jmQ.trim().toLowerCase(),e=jmEff(),day=e?+e.slice(8,10):0;
+  let rows=c.rows.map(r=>({r:r,deps:jmDeps(r.m.id)}));
+  if(q)rows=rows.filter(x=>x.r.m.name.toLowerCase().includes(q));
+  if(!rows.length)return `<div class='card'><div class='empty'>"${esc(jmQ)}" নামে কোনো সদস্য পাওয়া যায়নি।</div></div>`;
+  const show=(q||jmAll)?rows:rows.slice(0,5);
+  let h=show.map(x=>jmCard(x.r,x.deps,day,!!q)).join('');
+  if(!q&&rows.length>5)h+=`<button class='btn alt' style='margin-bottom:12px' onclick='jmAll=!jmAll;render()'>${jmAll?'কম দেখুন (See Less)':'আরও দেখুন (See More) · '+(rows.length-5)}</button>`;
+  return h;
+}
+function jmRedraw(){const el=$('#jcards');if(el)el.innerHTML=jmCards()}
+function jmDay(){
+  const e=jmEff();if(!e)return '';
+  const day=+e.slice(8,10),list=jama.filter(x=>+x.d===day).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  let h=`<div class='card'><h2>${fmtD(day)} তারিখের জমা</h2>`;
+  if(!list.length)return h+`<div class='empty'>এই তারিখে কোনো জমা নেই।</div></div>`;
+  h+=list.map(x=>`<div class='it'><div><b>${esc(who(x.who))}</b></div><div class='am'>৳${f(x.amt)}${canW?`<button class='btn alt sbtn' onclick='startEd("${x.who}","${x.id}")'>Edit</button>`:''}</div></div>`).join('');
+  return h+`<div class='line'><span>মোট (${list.length} টি)</span><b>৳${f(list.reduce((s,x)=>s+(+x.amt||0),0))}</b></div></div>`;
+}
+function openJM(id){jmM=id;jmEdit=null;jmAnim=true;renderModal()}
+function startEd(who_,id){jmM=who_;jmEdit=id;jmEdFor=id;jmEdVal=null;jmAnim=true;renderModal()}
+function editRow(id){jmEdit=id;jmEdFor=id;jmEdVal=null;renderModal()}
+function jmSaveEdit(id){
+  const x=jama.find(i=>i.id===id);if(!x)return;
+  const v=parseFloat($('#je').value);
+  if(!(v>0)){toast('সঠিক টাকা লিখুন');return}
+  if(v===+x.amt){jmEdit=null;renderModal();return}
+  if(jama.some(i=>i.id!==id&&i.who===x.who&&+i.d===+x.d&&+i.amt===v)){toast('একই জমা আগে থেকেই আছে');return}
+  if(stage({t:'edit',c:'jama',id:id,d:{amt:v},lg:who(x.who)+'-এর '+fmtD(x.d)+' তারিখের জমা '+f(x.amt)+' থেকে '+f(v)+' টাকা করা হয়েছে'}))jmEdit=null;
+  renderModal();
+}
+function closeJM(){jmM=null;jmEdit=null;renderModal()}
+function renderModal(){
+  const el=$('#md');if(!el)return;
+  if(!jmM||status!=='ok'){el.innerHTML='';document.body.style.overflow='';return}
+  const m=MEM().find(x=>x.id===jmM);
+  if(!m){jmM=null;el.innerHTML='';return}
+  const old=$('#je'),hadFocus=old&&document.activeElement===old;
+  const deps=jmDeps(jmM),tot=deps.reduce((s,x)=>s+(+x.amt||0),0),last=deps.length?deps[deps.length-1]:null;
+  const rows=deps.length?deps.map(x=>{
+    const ed=jmEdit===x.id,val=(jmEdFor===x.id&&jmEdVal!==null)?jmEdVal:x.amt;
+    const act=!canW?'—':ed?`<button class='btn sbtn' onclick='jmSaveEdit("${x.id}")'>ঠিক আছে</button> <button class='btn alt sbtn' onclick='jmEdit=null;renderModal()'>বাতিল</button>`:`<button class='btn alt sbtn' onclick='editRow("${x.id}")'>Edit</button>`;
+    return `<tr><td>${fmtD(x.d)}</td><td>${ed?`<input id='je' class='jin' type='number' min='1' inputmode='decimal' value='${esc(val)}' oninput='jmEdVal=this.value'>`:'৳'+f(x.amt)}</td><td>${act}</td></tr>`;
+  }).join(''):`<tr><td colspan='3'><div class='empty'>এখনো কোনো জমা নেই।</div></td></tr>`;
+  el.innerHTML=`<div class='mdb${jmAnim?' anim':''}' onclick='closeJM()'><div class='mds' onclick='event.stopPropagation()'><div class='mdh'><div class='av'>${esc([...m.name][0]||'?')}</div><div><b>${esc(m.name)}</b><small>জমার বিবরণ</small></div><button class='x' aria-label='বন্ধ' onclick='closeJM()'>×</button></div><div class='g3'><div><span>সর্বমোট জমা</span>৳${f(tot)}</div><div><span>জমা দিয়েছে</span>${deps.length} বার</div><div><span>সর্বশেষ জমা</span>${last?fmtD(last.d):'—'}</div></div><h2 style='margin:16px 0 8px'>জমার ইতিহাস</h2><div class='sc'><table><thead><tr><th>Date</th><th>Deposit Amount</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>${ops.length?`<button class='btn' onclick='saveAll()'>সেভ করুন (${ops.length})</button>`:''}<div class='note' style='margin-top:8px'>জমার টাকা মোছা বা কাটা যায় না, শুধু ভুল হলে Edit করা যায়। কে কখন বদলেছে তা সেটিংয়ের লগে থাকে।</div></div></div>`;
+  jmAnim=false;document.body.style.overflow='hidden';
+  const ne=$('#je');if(ne&&hadFocus)ne.focus();
+}
 function jamaHTML(){
   const c=calc();
   let h=banner()+roView();
   if(canW)h+=`<div class="card"><h2>নতুন জমা যোগ করুন</h2><select id="jw">${opts()}</select>${memLink()}<div class="fr"><input id="ja" type="number" min="0" inputmode="decimal" placeholder="টাকা"><select id="jd">${dayOpts()}</select></div><button class="btn" onclick="addJ()">জমা যোগ করুন</button></div>`;
-  h+=`<div class="card"><h2>কে কত জমা দিয়েছে</h2>${c.rows.map(r=>{return `<div class="line" style="border:0;margin:0;padding:4px 0"><span>${esc(r.m.name)}</span><b>${f(r.j)}</b></div>`}).join('')||'<div class="empty">কোনো সদস্য নেই।</div>'}</div>`;
-  h+=`<div class="card"><h2>জমার তালিকা</h2>`;
-  if(!jama.length)h+=`<div class="empty">এখনো কোনো জমা নেই।</div>`;
-  [...jama].sort((a,b)=>b.d-a.d||(b.ts||0)-(a.ts||0)).forEach(j=>{
-    h+=`<div class="it"><div><b>${esc(who(j.who))}</b><br><small>${j.d} তারিখ</small></div><div class="am">${f(j.amt)}${canW?`<button class="x" aria-label="মুছুন" onclick="delE('jama','${j.id}')">×</button>`:''}</div></div>`;
-  });
-  return h+`</div>`;
+  h+=jmSummary(c)+jmBar()+`<div id="jcards">${jmCards(c)}</div>`+jmDay();
+  return h;
 }
 function addJ(){
   const amt=parseFloat($('#ja').value);
@@ -494,7 +579,7 @@ function render(){
   const rc=$('#rc');
   if(status==='ok'){rc.hidden=false;rc.textContent=isAdmin?'অ্যাডমিন':cw?'এডিটর':'ভিউয়ার'}else rc.hidden=true;
   const eb=$('#eb');eb.hidden=true;$('#nv').style.display=status==='ok'?'':'none';$('header h1').textContent=messTitle||'মিল ক্যালকুলেটর';eb.textContent=editing?'✓ এডিট চলছে':'✎ এডিট করুন';eb.style.background=editing?'var(--good)':'';eb.style.color=editing?'#fff':'';
-  syncEff();updBar();
+  syncEff();updBar();renderModal();
   document.querySelectorAll('#nv button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
   const v=$('#v');
   if(status==='loading'){v.innerHTML='<div class="card"><div class="empty">লোড হচ্ছে…</div></div>';return}
@@ -506,7 +591,7 @@ function render(){
   const fid=ae&&v.contains(ae)&&ae.id?ae.id:null;
   const y=window.scrollY;
   v.innerHTML=({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]();
-  Object.keys(saved).forEach(id=>{if(id==='mp')return;const e=document.getElementById(id);if(e)e.value=saved[id]});
+  Object.keys(saved).forEach(id=>{if(id==='mp'||id==='jf')return;const e=document.getElementById(id);if(e)e.value=saved[id]});
   if(fid){const e=document.getElementById(fid);if(e)e.focus()}
   if(tab==='meal')patchMeal();
   window.scrollTo(0,y);
@@ -523,6 +608,7 @@ function ap(o,S){
   else if(o.t==='meal')S.M={...S.M,[o.k]:o.v};
   else if(o.t==='lock')S.lock=o.v;
   else if(o.t==='mem')S.mem=o.l;
+  else if(o.t==='edit')S[o.c]=S[o.c].map(x=>x.id===o.id?{...x,...o.d}:x);
 }
 function syncEff(){
   const S={bazar:sB,jama:sJ,extra:sX,M:{...((mdoc&&mdoc.meals)||{})},lock:!!(mdoc&&mdoc.locked),mem:(cfg&&cfg.members)||[]};
@@ -551,6 +637,7 @@ async function flush(){
       else if(o.t==='trashmeal'){await db.doc(p+'/trash/m'+Date.now().toString(36)).set({col:'meals',d:o.m,ts:Date.now(),by:myId||''})}
       else if(o.t==='meal')mm[o.k]=o.v;
       else if(o.t==='lock')await db.doc(p).update({locked:o.v});
+      else if(o.t==='edit')await db.doc(p+'/'+o.c+'/'+o.id).update(o.d);
       else if(o.t==='mem')await db.doc('config/app').set({members:o.l});
     }
     if(Object.keys(mm).length)await db.doc(p).set({meals:mm},{merge:true});
@@ -578,6 +665,7 @@ function addJ(){
   const amt=parseFloat($('#ja').value);
   if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
   const e={who:$('#jw').value,amt,d:clampD($('#jd').value),ts:Date.now()};
+  if(jama.some(x=>x.who===e.who&&+x.d===e.d&&+x.amt===e.amt)){toast('একই জমা আগে থেকেই আছে');return}
   if(stage({t:'add',c:'jama',id:nid(),d:e,lg:who(e.who)+' '+f(amt)+' টাকা জমা দিয়েছে'}))$('#ja').value='';
 }
 function addX(){
