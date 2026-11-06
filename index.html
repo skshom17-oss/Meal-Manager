@@ -315,7 +315,7 @@ function sumHTML(){
 }
 function opts(){return mems(true).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}
 function memLink(){return isAdmin?`<button class="lk" onclick="go('set')">সদস্য যোগ বা মুছুন</button>`:''}
-function bazarHTML(){return bazarMain()+extraHTML()}
+function bazarHTML(){return bazarMain()}
 let bzAll=false,xtAll=false;
 const SER=(a,b)=>(a.d-b.d)||((a.ts||0)-(b.ts||0));
 function wk(d){try{const[y,m]=month.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('bn-BD',{weekday:'short'})}catch(e){return ''}}
@@ -373,11 +373,7 @@ function resolveNames(){}
 let jmQ='',jmAll=false,jmDate=null,jmM=null,jmEdit=null,jmEdFor=null,jmEdVal=null,jmAnim=false;
 function fmtD(d){const[y,m]=month.split('-');return String(d).padStart(2,'0')+'-'+m+'-'+y}
 function jmDeps(id){return jama.filter(x=>x.who===id).sort((a,b)=>(a.d-b.d)||((a.ts||0)-(b.ts||0)))}
-function jmEff(){
-  if(jmDate&&jmDate.slice(0,7)===month)return jmDate;
-  if(jmDate==='')return '';
-  return month===cur?cur+'-'+String(new Date().getDate()).padStart(2,'0'):'';
-}
+function jmEff(){return ''}
 function jmSummary(c){
   const today=month===cur?new Date().getDate():0;
   const sum=l=>l.reduce((s,x)=>s+(+x.amt||0),0);
@@ -448,7 +444,7 @@ function jamaHTML(){
   const c=calc();
   let h=banner()+roView();
   if(canW)h+=`<div class="card"><h2>নতুন জমা যোগ করুন</h2><select id="jw">${opts()}</select>${memLink()}<div class="fr"><input id="ja" type="number" min="0" inputmode="decimal" placeholder="টাকা"><select id="jd">${dayOpts()}</select></div><button class="btn" onclick="addJ()">জমা যোগ করুন</button></div>`;
-  h+=jmSummary(c)+jmBar()+`<div id="jcards">${jmCards(c)}</div>`+jmDay();
+  h+=`<div id="jcards">${jmCards(c)}</div>`;
   return h;
 }
 function addJ(){
