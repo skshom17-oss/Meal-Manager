@@ -99,12 +99,12 @@ tfoot td:first-child{background:var(--inp)}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
 nav button{font:inherit;font-size:14px;font-weight:500;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:8px;cursor:pointer;min-height:44px}
 nav button.on{color:var(--accink);background:var(--acc);font-weight:700}
-#toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--navyink);padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--navyink);padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;white-space:nowrap}
 #toast.on{opacity:1}
 </style>
 </head>
 <body>
-<header><h1>মিল ক্যালকুলেটর</h1><div class="hs"><button id="mb"></button><span class="chip" id="rc" hidden></span><button class='chip' id='eb' hidden onclick='toggleEdit()'></button></div></header>
+<header><h1>মিল ক্যালকুলেটর</h1><div class="hs"><button id="mb"></button><span class="chip" id="rc" hidden></span><button class='chip' id='eb' hidden onclick='toggleEdit()'></button><span id='sv' style='font-size:12.5px;opacity:.9'></span></div></header>
 <main id="v"></main><div class='credit'>App created by Shom Chandra Das<br><a href='mailto:skshom17@gmail.com' style='color:inherit'>skshom17@gmail.com</a></div>
 <nav id="nv">
 <button data-t="summary">সামারি</button>
@@ -327,7 +327,7 @@ function bazarMain(){
   h+=`<div class="card"><h2>বাজারের তালিকা</h2>`;
   if(!bazar.length)h+=`<div class="empty">এখনো কোনো বাজার নেই।</div>`;
   [...bazar].sort(SER).slice(0,bzAll?999:5).forEach(b=>{
-    h+=`<div class="it"><div><b>${b.d} তারিখ</b> ${esc(b.items||'')}<br><small>${esc(who(b.who))} বাজার করেছে</small></div><div class="am">${f(b.amt)}${canW?`<button class="x" aria-label="মুছুন" onclick="delE('bazar','${b.id}')">×</button>`:''}</div></div>`;
+    h+=`<div class="it"><div><b>${b.d} তারিখ</b> ${esc(b.items||'')}<br><small>${esc(who(b.who))} বাজার করেছে</small></div><div class="am">${f(b.amt)}${canW?`<button class="x" aria-label="মুছুন" style="${armed==='d'+b.id?'width:auto;padding:0 10px;font-size:14px;font-weight:600':''}" onclick="arm('d${b.id}',()=>delE('bazar','${b.id}'))">${armed==='d'+b.id?'নিশ্চিত?':'×'}</button>`:''}</div></div>`;
   });
   return h+moreBtn(bazar.length,bzAll,'bzAll')+`</div>`;
 }
@@ -436,7 +436,7 @@ function renderModal(){
     const act=!canW?'—':ed?`<button class='btn sbtn' onclick='jmSaveEdit("${x.id}")'>ঠিক আছে</button> <button class='btn alt sbtn' onclick='jmEdit=null;renderModal()'>বাতিল</button>`:`<button class='btn alt sbtn' onclick='editRow("${x.id}")'>Edit</button>`;
     return `<tr><td>${fmtD(x.d)}</td><td>${ed?`<input id='je' class='jin' type='number' min='1' inputmode='decimal' value='${esc(val)}' oninput='jmEdVal=this.value'>`:'৳'+f(x.amt)}</td><td>${act}</td></tr>`;
   }).join(''):`<tr><td colspan='3'><div class='empty'>এখনো কোনো জমা নেই।</div></td></tr>`;
-  el.innerHTML=`<div class='mdb${jmAnim?' anim':''}' onclick='closeJM()'><div class='mds' onclick='event.stopPropagation()'><div class='mdh'><div class='av'>${esc([...m.name][0]||'?')}</div><div><b>${esc(m.name)}</b><small>জমার বিবরণ</small></div><button class='x' aria-label='বন্ধ' onclick='closeJM()'>×</button></div><div class='g3'><div><span>সর্বমোট জমা</span>৳${f(tot)}</div><div><span>জমা দিয়েছে</span>${deps.length} বার</div><div><span>সর্বশেষ জমা</span>${last?fmtD(last.d):'—'}</div></div><h2 style='margin:16px 0 8px'>জমার ইতিহাস</h2><div class='sc'><table><thead><tr><th>Date</th><th>Deposit Amount</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>${ops.length?`<button class='btn' onclick='saveAll()'>সেভ করুন (${ops.length})</button>`:''}<div class='note' style='margin-top:8px'>জমার টাকা মোছা বা কাটা যায় না, শুধু ভুল হলে Edit করা যায়। কে কখন বদলেছে তা সেটিংয়ের লগে থাকে।</div></div></div>`;
+  el.innerHTML=`<div class='mdb${jmAnim?' anim':''}' onclick='closeJM()'><div class='mds' onclick='event.stopPropagation()'><div class='mdh'><div class='av'>${esc([...m.name][0]||'?')}</div><div><b>${esc(m.name)}</b><small>জমার বিবরণ</small></div><button class='x' aria-label='বন্ধ' onclick='closeJM()'>×</button></div><div class='g3'><div><span>সর্বমোট জমা</span>৳${f(tot)}</div><div><span>জমা দিয়েছে</span>${deps.length} বার</div><div><span>সর্বশেষ জমা</span>${last?fmtD(last.d):'—'}</div></div><h2 style='margin:16px 0 8px'>জমার ইতিহাস</h2><div class='sc'><table><thead><tr><th>Date</th><th>Deposit Amount</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div><div class='note' style='margin-top:8px'>জমার টাকা মোছা বা কাটা যায় না, শুধু ভুল হলে Edit করা যায়। কে কখন বদলেছে তা সেটিংয়ের লগে থাকে।</div></div></div>`;
   jmAnim=false;document.body.style.overflow='hidden';
   const ne=$('#je');if(ne&&hadFocus)ne.focus();
 }
@@ -537,7 +537,7 @@ function setHTML(){
   return h;
 }
 function go(t){tab=t;armed=null;render();window.scrollTo(0,0)}
-function setMonth(m){if(!m||!db)return;if(ops.length&&m!==month){toast('আগে সেভ করুন');render();return}month=m;watchMonth();render()}
+function setMonth(m){if(!m||!db)return;if(ops.length&&m!==month){toast('সেভ হচ্ছে, একটু পরে চেষ্টা করুন');render();return}month=m;watchMonth();render()}
 function openMonth(){const v=$('#nmo').value;if(v)setMonth(v)}
 function saveMembers(l,ok,lg){if(!db)return;w(async()=>{await db.doc('config/app').set({members:l});if(lg)await logE('months/'+month,lg)},ok)}
 function addM(){
@@ -615,16 +615,21 @@ const E=()=>eff||syncEff();
 function stage(o){
   if(!editing){toast('আগে উপরে ✎ এডিট করুন চাপুন');return false}
   if(!ready(o.t==='lock'))return false;
-  ops.push(o);rd=[];render();return true;
+  ops.push(o);rd=[];render();autoSave();return true;
 }
 function undo(){if(ops.length){rd.push(ops.pop());render()}}
 function redo(){if(rd.length){ops.push(rd.pop());render()}}
+let flushing=false,flushT=null;
+function autoSave(){clearTimeout(flushT);flushT=setTimeout(flush,300)}
+function setSv(t,ms){const e=$('#sv');if(!e)return;e.textContent=t;clearTimeout(setSv.t);if(ms)setSv.t=setTimeout(()=>{e.textContent=''},ms)}
 async function flush(){
+  if(flushing){autoSave();return false}
   if(!ops.length)return true;
-  if(!db||!mLoaded){toast('লোড হচ্ছে…');return false}
-  const p='months/'+month,list=[],lgs=ops.map(o=>o.lg).filter(Boolean),mm={};
-  const fl=o=>o.t==='batch'?o.ops.forEach(fl):list.push(o);ops.forEach(fl);
-  toast('সেভ হচ্ছে…');pend++;let ok=true;
+  if(!db||!mLoaded){autoSave();return false}
+  flushing=true;
+  const sent=[...ops],p='months/'+month,list=[],lgs=sent.map(o=>o.lg).filter(Boolean),mm={};
+  const fl=o=>o.t==='batch'?o.ops.forEach(fl):list.push(o);sent.forEach(fl);
+  setSv('সেভ হচ্ছে…');pend++;let ok=true,retry=false;
   try{
     await ensureMonth(p);
     for(const o of list){
@@ -638,19 +643,22 @@ async function flush(){
     }
     if(Object.keys(mm).length)await db.doc(p).set({meals:mm},{merge:true});
     for(const t of lgs)await logE(p,t);
-    ops=[];rd=[];
-  }catch(e){ok=false;toast(e&&e.code==='invalid_argument'?'সেভ করার অনুমতি নেই':'সেভ হয়নি, আবার চেষ্টা করুন')}
-  pend--;if(!pend)sync();render();return ok;
+    const sn=await db.doc(p).get();mExists=sn.exists;mdoc=sn.exists?sn.data():{};
+    ops=ops.filter(o=>!sent.includes(o));
+    setSv('✓ সেভ হয়েছে',1500);
+  }catch(e){
+    ok=false;
+    if(e&&(e.code==='permission-denied'||e.code==='invalid_argument')){ops=ops.filter(o=>!sent.includes(o));toast('অনুমতি নেই, বদল সেভ হয়নি');setSv('')}
+    else{setSv('সেভ হয়নি, আবার চেষ্টা হচ্ছে…');retry=true}
+  }
+  pend--;flushing=false;render();
+  if(ops.length){if(retry)setTimeout(flush,4000);else autoSave()}
+  return ok;
 }
 async function saveAll(){if(await flush())toast('সেভ হয়েছে ✓')}
 async function doneEdit(){if(ops.length&&!(await flush()))return;editing=false;go('summary');toast('শেষ হয়েছে ✓')}
 function toggleEdit(){if(editing)doneEdit();else{editing=true;render()}}
-function updBar(){
-  const b=$('#bar'),on=status==='ok'&&cw;
-  b.hidden=!on;document.body.style.paddingBottom=on?'150px':'';
-  if(!on)return;
-  b.innerHTML=`<button class='x3' aria-label='আনডু' title='আনডু' ${ops.length?'':'disabled'} onclick='undo()'>↶</button><button class='x3' aria-label='রিডু' title='রিডু' ${rd.length?'':'disabled'} onclick='redo()'>↷</button><span class='cnt'>${ops.length?ops.length+' টি সেভ বাকি':'সব সেভ আছে ✓'}</span><button class='btn' style='width:auto;padding:0 16px' ${ops.length?'':'disabled'} onclick='saveAll()'>সেভ</button>`;
-}
+function updBar(){const b=$('#bar');if(b){b.hidden=true;b.innerHTML=''}document.body.style.paddingBottom=''}
 function addB(){
   const amt=parseFloat($('#ba').value);
   if(!(amt>0)){toast('টাকার পরিমাণ লিখুন');return}
@@ -739,7 +747,7 @@ async function purgeM(id){
   }catch(e){toast('যাচাই করা যায়নি');return}
   if(used){toast('পুরনো হিসাব আছে, মুছা যাবে না');return}
   saveMembers(MEM().filter(m=>m.id!==id),'',who(id)+' সদস্য স্থায়ীভাবে মুছে ফেলা হয়েছে');
-  toast('সেভ চাপলে মুছে যাবে');
+  toast('মুছে ফেলা হয়েছে');
 }
 window.addEventListener('beforeunload',e=>{if(ops.length){e.preventDefault();e.returnValue=''}});
 init();
