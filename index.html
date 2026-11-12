@@ -26,7 +26,7 @@ header h1{margin:0;font-size:20px;font-weight:700}
 .hs{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:2px}
 .hs button{font:inherit;color:var(--navyink);background:none;border:0;padding:0;text-decoration:underline;opacity:.85;cursor:pointer}
 .chip{font-size:12.5px;font-weight:600;padding:1px 9px;border-radius:99px;background:var(--acc);color:var(--accink)}
-main{max-width:560px;margin:0 auto;padding:14px}
+main{max-width:560px;margin:0 auto;padding:14px;background:var(--bg);min-height:60vh}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
 .card.owe{border-color:var(--bad);border-width:2px}
 .card.ok{border-color:var(--good)}
@@ -112,7 +112,7 @@ tfoot td:first-child{background:var(--inp)}
 @keyframes rateIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 .mc.new{animation:mcIn .5s cubic-bezier(.16,1,.3,1) both}.mc:nth-of-type(2){animation-delay:.08s}.mc:nth-of-type(3){animation-delay:.16s}.mc:nth-of-type(4){animation-delay:.24s}.mc:nth-of-type(5){animation-delay:.32s}.mc:nth-of-type(6){animation-delay:.40s}
 .rate2{animation:rateIn .6s cubic-bezier(.16,1,.3,1) both}
-.vscreen{animation:vIn .6s cubic-bezier(.22,.61,.36,1) both}@keyframes vIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.vscreen{animation:vIn .45s ease-out both}@keyframes vIn{from{opacity:.55}to{opacity:1}}
 .sheet{animation:sheetUp .45s cubic-bezier(.16,1,.3,1) both}@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
 nav{position:fixed;left:0;right:0;bottom:0;transform:translateZ(0);will-change:auto;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
 nav button{font:inherit;font-size:14px;font-weight:500;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:8px;cursor:pointer;min-height:44px;-webkit-tap-highlight-color:transparent;transition:none;animation:none}
@@ -625,7 +625,8 @@ function render(){
   const fid=ae&&v.contains(ae)&&ae.id?ae.id:null;
   const y=window.scrollY;
   const cls=(tab!==lastTab)?'vscreen':'';lastTab=tab;
-  v.innerHTML='<div class="'+cls+'">'+({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]()+'</div>';
+  const html='<div class="'+cls+'">'+({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]()+'</div>';
+  v.innerHTML=html;
   Object.keys(saved).forEach(id=>{if(id==='mp'||id==='jf')return;const e=document.getElementById(id);if(e)e.value=saved[id]});
   if(fid){const e=document.getElementById(fid);if(e)e.focus()}
   if(tab==='meal')patchMeal();
