@@ -455,6 +455,12 @@ function jmSaveEdit(id){
   renderModal();
 }
 function closeJM(){jmM=null;jmEdit=null;renderModal()}
+function delDep(id){
+  const x=jama.find(i=>i.id===id);if(!x)return;
+  const {id:_i,...dd}=x;
+  stage({t:'del',c:'jama',id,d:dd,lg:who(x.who)+'-এর '+f(x.amt)+' টাকার জমা মুছেছে'});
+  renderModal();
+}
 function renderModal(){
   const el=$('#md');if(!el)return;
   if(!jmM||status!=='ok'){el.innerHTML='';document.body.style.overflow='';return}
@@ -464,7 +470,8 @@ function renderModal(){
   const deps=jmDeps(jmM),tot=deps.reduce((s,x)=>s+(+x.amt||0),0),last=deps.length?deps[deps.length-1]:null;
   const rows=deps.length?deps.map(x=>{
     const ed=jmEdit===x.id,val=(jmEdFor===x.id&&jmEdVal!==null)?jmEdVal:x.amt;
-    const act=!canW?'—':ed?`<button class='btn sbtn' onclick='jmSaveEdit("${x.id}")'>ঠিক আছে</button> <button class='btn alt sbtn' onclick='jmEdit=null;renderModal()'>বাতিল</button>`:`<button class='btn alt sbtn' onclick='editRow("${x.id}")'>Edit</button>`;
+    const del=`<button class='btn danger sbtn' style='margin-left:6px' onclick='arm("jd${x.id}",()=>delDep("${x.id}"))'>${armed==='jd'+x.id?'নিশ্চিত?':'মুছুন'}</button>`;
+    const act=!canW?'—':ed?`<button class='btn sbtn' onclick='jmSaveEdit("${x.id}")'>ঠিক আছে</button> <button class='btn alt sbtn' onclick='jmEdit=null;renderModal()'>বাতিল</button>`:`<button class='btn alt sbtn' onclick='editRow("${x.id}")'>Edit</button>${del}`;
     return `<tr><td>${fmtD(x.d)}</td><td>${ed?`<input id='je' class='jin' type='number' min='1' inputmode='decimal' value='${esc(val)}' oninput='jmEdVal=this.value'>`:'৳'+f(x.amt)}</td><td>${act}</td></tr>`;
   }).join(''):`<tr><td colspan='3'><div class='empty'>এখনো কোনো জমা নেই।</div></td></tr>`;
   el.innerHTML=`<div class='mdb${jmAnim?' anim':''}' onclick='closeJM()'><div class='mds' onclick='event.stopPropagation()'><div class='mdh'><div class='av'>${esc([...m.name][0]||'?')}</div><div><b>${esc(m.name)}</b><small>জমার বিবরণ</small></div><button class='x' aria-label='বন্ধ' onclick='closeJM()'>×</button></div><div class='g3'><div><span>সর্বমোট জমা</span>৳${f(tot)}</div><div><span>জমা দিয়েছে</span>${deps.length} বার</div><div><span>সর্বশেষ জমা</span>${last?fmtD(last.d):'—'}</div></div><h2 style='margin:16px 0 8px'>জমার ইতিহাস</h2><div class='sc'><table><thead><tr><th>Date</th><th>Deposit Amount</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div><div class='note' style='margin-top:8px'>জমার টাকা মোছা বা কাটা যায় না, শুধু ভুল হলে Edit করা যায়। কে কখন বদলেছে তা সেটিংয়ের লগে থাকে।</div></div></div>`;
