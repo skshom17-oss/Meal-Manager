@@ -110,7 +110,7 @@ tfoot td:first-child{background:var(--inp)}
 .mc.owe{border:2px solid var(--bad);box-shadow:0 0 18px rgba(255,122,0,.25)}
 @keyframes mcIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes rateIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
-.mc{animation:mcIn .5s cubic-bezier(.16,1,.3,1) both}.mc:nth-of-type(2){animation-delay:.08s}.mc:nth-of-type(3){animation-delay:.16s}.mc:nth-of-type(4){animation-delay:.24s}.mc:nth-of-type(5){animation-delay:.32s}.mc:nth-of-type(6){animation-delay:.40s}
+.mc.new{animation:mcIn .5s cubic-bezier(.16,1,.3,1) both}.mc:nth-of-type(2){animation-delay:.08s}.mc:nth-of-type(3){animation-delay:.16s}.mc:nth-of-type(4){animation-delay:.24s}.mc:nth-of-type(5){animation-delay:.32s}.mc:nth-of-type(6){animation-delay:.40s}
 .rate2{animation:rateIn .6s cubic-bezier(.16,1,.3,1) both}
 .vscreen{animation:vIn .42s cubic-bezier(.16,1,.3,1) both}@keyframes vIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 .sheet{animation:sheetUp .45s cubic-bezier(.16,1,.3,1) both}@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
@@ -338,15 +338,16 @@ function sumHTML(){
     const amtTxt=!act?'':owes?'−'+f(-bal):gets?'+'+f(bal):'0';
     const badge=!act?`<span class='mb gray'>কোনো মিল নেই</span>`:owes?`<span class='mb neg'>${amtTxt}</span>`:`<span class='mb' style='background:${col};color:#0A0E1A;box-shadow:0 0 14px ${col}55'>${amtTxt}</span>`;
     const lines=act?`<div class='ml'>${IC.m}মোট মিল: ${f(r.ml)}${r.g?' (মেহমান '+f(r.g)+')':''}</div><div class='ml'>${IC.f}মোট খাবার: ${f(r.food)}${c.te>0?' + বাড়তি '+f(r.ex):''}</div><div class='ml'>${IC.w}মোট জমা: ${f(r.j)}</div>`:`<div class='ml'>${IC.c}কোনো হিসাব নেই</div>`;
-    h+=`<div class='mc${owes?' owe':''}'><div><div class='mcn'><span style='color:${col};display:flex'>${IC.p}</span>${esc(r.m.name)}</div>${lines}</div>${badge}</div>`;
+    h+=`<div class='mc${owes?' owe':''}${(window.__seen&&window.__seen[tab+'|'+r.m.id])?'':' new'}'><div><div class='mcn'><span style='color:${col};display:flex'>${IC.p}</span>${esc(r.m.name)}</div>${lines}</div>${badge}</div>`;
   });
+  if(!window.__seen)window.__seen={};c.rows.forEach(r=>window.__seen[tab+'|'+r.m.id]=1);
   return h+`<a class='btn' style='display:block;text-align:center;text-decoration:none;margin-bottom:8px;padding-top:12px' target='_blank' rel='noopener' href='https://wa.me/?text=${encodeURIComponent(shareText())}'>WhatsApp-এ পাঠান</a><div class='fr'><button class='btn alt' onclick='share()'>কপি করুন</button><button class='btn alt' onclick='exportCsv()'>CSV ডাউনলোড</button></div>`;
 }
 
 function opts(){return mems(true).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}
 function memLink(){return isAdmin?`<button class="lk" onclick="go('set')">সদস্য যোগ বা মুছুন</button>`:''}
 function bazarHTML(){return bazarMain()}
-let bzAll=false,xtAll=false;
+let bzAll=false,xtAll=false,lastTab=null;
 const SER=(a,b)=>(a.d-b.d)||((a.ts||0)-(b.ts||0));
 function wk(d){try{const[y,m]=month.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('bn-BD',{weekday:'short'})}catch(e){return ''}}
 function dayOpts(){const sel=defDay();return Array.from({length:dim()},(_,i)=>`<option value="${i+1}"${i+1===sel?' selected':''}>${i+1} তারিখ (${wk(i+1)})</option>`).join('')}
@@ -616,11 +617,12 @@ function render(){
   const saved={};v.querySelectorAll('input[id],select[id]').forEach(e=>saved[e.id]=e.value);
   const fid=ae&&v.contains(ae)&&ae.id?ae.id:null;
   const y=window.scrollY;
-  v.innerHTML='<div class="vscreen">'+({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]()+'</div>';
+  const cls=(tab!==lastTab)?'vscreen':'';lastTab=tab;
+  v.innerHTML='<div class="'+cls+'">'+({summary:sumHTML,bazar:bazarHTML,meal:mealHTML,jama:jamaHTML,set:setHTML})[tab]()+'</div>';
   Object.keys(saved).forEach(id=>{if(id==='mp'||id==='jf')return;const e=document.getElementById(id);if(e)e.value=saved[id]});
   if(fid){const e=document.getElementById(fid);if(e)e.focus()}
   if(tab==='meal')patchMeal();
-  if(tab==='summary'){const rv=$('#rate');if(rv&&!rv.dataset.done){rv.dataset.done=1;const to=+rv.dataset.v||0,t0=performance.now();(function tick(t){const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);rv.textContent=f(to*e);if(k<1)requestAnimationFrame(tick)})(t0)}}
+  if(tab==='summary'){const rv=$('#rate');if(rv&&!rv.dataset.done&&cls){rv.dataset.done=1;const to=+rv.dataset.v||0,t0=performance.now();(function tick(t){const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);rv.textContent=f(to*e);if(k<1)requestAnimationFrame(tick)})(t0)}}
   window.scrollTo(0,y);
 }
 $('#nv').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.t)});
