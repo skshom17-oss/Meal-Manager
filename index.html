@@ -791,6 +791,29 @@ async function purgeM(id){
 }
 window.addEventListener('beforeunload',e=>{if(ops.length){e.preventDefault();e.returnValue=''}});
 init();
+
+/* ---- swipe left / right to change tab (order = menu order) ---- */
+(function(){
+  const ORDER=['summary','bazar','meal','jama','set'];
+  let sx=0,sy=0,st=0,track=false;
+  const main=document.getElementById('v');
+  main.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    // ignore swipes that start inside a horizontal scroller (the history table)
+    if(e.target.closest('.sc,.mds,input,select,textarea,#md'))return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();track=true;
+  },{passive:true});
+  main.addEventListener('touchend',e=>{
+    if(!track)return;track=false;
+    const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
+    // only a clearly horizontal, quick swipe counts
+    if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*.6||dt>700)return;
+    const i=ORDER.indexOf(tab);if(i<0)return;
+    const next=dx<0?i+1:i-1;
+    if(next<0||next>=ORDER.length)return;   // at the first/last tab: stop
+    tab=ORDER[next];armed=null;render();window.scrollTo(0,0);
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
